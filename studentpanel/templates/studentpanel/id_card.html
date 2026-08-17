@@ -1,0 +1,459 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Digital ID Card{% endblock %}
+{% block content %}
+
+<div class="idp-header print:hidden">
+  <div>
+    <h1 class="page-title">Digital ID Card</h1>
+    <p class="page-sub">Standard ID-1 size (85.6 &times; 54 mm). Valid for the {{ student.session }} session &mdash; show the QR panel at campus checkpoints.</p>
+  </div>
+  <div class="idp-actions">
+    <button type="button" onclick="flipCard()" class="idp-btn idp-btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 7.5 4M21 12a9 9 0 0 1-9 9 9 9 0 0 1-7.5-4"/><path d="M19.5 3v4h-4M4.5 21v-4h4"/></svg>
+      <span id="flip-label">Show back</span>
+    </button>
+    <button type="button" onclick="window.print()" class="idp-btn idp-btn-solid">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+      Print card
+    </button>
+  </div>
+</div>
+
+<div class="idp-stage">
+  <div class="idp-flip" id="flipper">
+
+    {# ---------------------------------------------------------- FRONT #}
+    <article class="idc idc-front">
+      <div class="idc-guilloche" aria-hidden="true"></div>
+      <img src="{{ jstu.LOGO_URL }}" alt="" class="idc-watermark" aria-hidden="true">
+
+      <header class="idc-head">
+        <img src="{{ jstu.LOGO_URL }}" alt="{{ jstu.SHORT_NAME }} crest" class="idc-crest">
+        <div class="idc-titles">
+          <h2>{{ jstu.NAME }}</h2>
+          <p>{{ jstu.LOCATION }} &middot; Student Identity Card</p>
+        </div>
+        <span class="idc-chip" aria-hidden="true"></span>
+      </header>
+
+      <div class="idc-body">
+        <div class="idc-photo">
+          {% if request.user.avatar_url %}
+            <img src="{{ request.user.avatar_url }}" alt="Photograph of {{ request.user.display_name }}">
+          {% elif student.photo_url %}
+            <img src="{{ student.photo_url }}" alt="Photograph of {{ request.user.display_name }}">
+          {% else %}
+            <span class="idc-initials">{{ request.user.initials }}</span>
+          {% endif %}
+        </div>
+
+        <div class="idc-details">
+          <div class="idc-idhead">
+            <h3 class="idc-name">{{ request.user.display_name }}</h3>
+            <p class="idc-program">{{ student.program.level_label }}</p>
+            <p class="idc-dept-line">{{ student.program.department.name }}</p>
+          </div>
+
+          <dl class="idc-grid">
+            <div><dt>Student ID</dt><dd class="mono">{{ student.student_id }}</dd></div>
+            <div><dt>Registration</dt><dd class="mono">{{ student.registration_no }}</dd></div>
+            <div><dt>Session</dt><dd>{{ student.session }}</dd></div>
+            <div><dt>Year / Sem</dt><dd>{{ student.level }} / {{ student.semester }}</dd></div>
+            <div><dt>Blood group</dt><dd class="blood">{{ student.blood_group|default:"—" }}</dd></div>
+            <div><dt>Valid until</dt><dd>31 Dec {{ valid_until }}</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <footer class="idc-foot">
+        <div class="idc-dept">
+          <p class="idc-sign">Registrar, {{ jstu.SHORT_NAME }}</p>
+        </div>
+        <div class="idc-qr">
+          <img src="https://i.postimg.cc/rFRD78xr/image.png" alt="QR code linking to the verification page">
+          <span>Scan to verify</span>
+        </div>
+      </footer>
+    </article>
+
+    {# ----------------------------------------------------------- BACK #}
+    <article class="idc idc-back">
+      <div class="idc-guilloche" aria-hidden="true"></div>
+      <div class="idc-magstripe" aria-hidden="true"></div>
+
+      <div class="idc-back-body">
+        <section class="idc-block">
+          <h4>Holder</h4>
+          <div class="idc-row"><span>Name</span><b>{{ request.user.display_name }}</b></div>
+          <div class="idc-row"><span>Student ID</span><b class="mono">{{ student.student_id }}</b></div>
+          <div class="idc-row"><span>Programme</span><b>{{ student.program.name }}</b></div>
+          <div class="idc-row"><span>Department</span><b>{{ student.program.department.code }}</b></div>
+          <div class="idc-row"><span>Blood group</span><b class="blood">{{ student.blood_group|default:"—" }}</b></div>
+        </section>
+
+        <section class="idc-block">
+          <h4>Validity</h4>
+          <div class="idc-row">
+            <span>Status</span>
+            <b class="idc-status idc-status--{{ student.status|lower }}">{{ student.get_status_display }}</b>
+          </div>
+          <div class="idc-row"><span>Session</span><b>{{ student.session }}</b></div>
+          <div class="idc-row"><span>Valid until</span><b>31 Dec {{ valid_until }}</b></div>
+          {% if student.contact_no %}
+          <div class="idc-row"><span>Contact</span><b class="mono">{{ student.contact_no }}</b></div>
+          {% endif %}
+          {% if student.guardian_contact %}
+          <div class="idc-row"><span>Emergency</span><b class="mono">{{ student.guardian_contact }}</b></div>
+          {% endif %}
+        </section>
+      </div>
+
+      <div class="idc-sigstrip">
+        <span class="idc-sigline"></span>
+        <span class="idc-siglabel">Holder's signature</span>
+      </div>
+
+      <div class="idc-barcode">
+        <div class="idc-bars" aria-hidden="true"></div>
+        <span class="mono">{{ student.student_id }}</span>
+      </div>
+
+      <footer class="idc-terms">
+        <p>This card remains the property of {{ jstu.NAME }} and is non-transferable.
+           If found, please return it to the Registrar's Office, {{ jstu.LOCATION }}.</p>
+        <p class="idc-verify mono">{{ jstu.SHORT_NAME }}-ID-{{ student.student_id }}</p>
+      </footer>
+    </article>
+
+  </div>
+</div>
+
+<script>
+  function flipCard() {
+    var flipper = document.getElementById('flipper');
+    var flipped = flipper.classList.toggle('is-flipped');
+    document.getElementById('flip-label').textContent = flipped ? 'Show front' : 'Show back';
+  }
+</script>
+
+<style>
+/* ==========================================================================
+   Student ID card - ISO/IEC 7810 ID-1 (85.6 x 54 mm), the standard bank-card
+   and university-ID size.
+
+   Every measurement inside the card is expressed in `em`, and the card's own
+   font-size is derived from its width. That way one set of rules renders the
+   card large enough to read on screen and at exact millimetre size on paper -
+   only `--card-w` changes between the two.
+   ========================================================================== */
+.idp-stage {
+  --card-w: min(92vw, 34rem);
+  --navy-900: #0b1f3f;
+  --navy-800: #12305e;
+  --navy-700: #1a4585;
+  --gold-500: #c9a227;
+  --gold-300: #e9cf7a;
+  --ink-800: #1f2937;
+  --ink-600: #4b5563;
+  --ink-400: #9ca3af;
+  --line: #e5e7eb;
+
+  display: flex;
+  justify-content: center;
+  perspective: 1800px;
+}
+
+/* ---- page chrome (not part of the card) ---- */
+.idp-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.idp-actions { display: flex; gap: .6rem; }
+.idp-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  border-radius: .75rem; padding: .6rem 1.1rem;
+  font-family: inherit; font-size: 13.5px; font-weight: 700;
+  cursor: pointer; transition: all .2s ease;
+}
+.idp-btn svg { height: 1rem; width: 1rem; }
+.idp-btn-ghost { border: 1px solid var(--line, #e5e7eb); background: #fff; color: #4b5563; }
+.idp-btn-ghost:hover { border-color: #bfd7fe; background: #eff5ff; color: #1e4fa3; }
+.idp-btn-solid { border: 1px solid transparent; background: #1e4fa3; color: #fff; }
+.idp-btn-solid:hover { background: #173d80; }
+
+/* ---- flip mechanics ---- */
+.idp-flip {
+  position: relative;
+  width: var(--card-w);
+  aspect-ratio: 85.6 / 54;
+  transform-style: preserve-3d;
+  transition: transform .7s cubic-bezier(.4, .2, .2, 1);
+}
+.idp-flip.is-flipped { transform: rotateY(180deg); }
+
+.idc {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 3.5mm;                 /* real cards are radius 3.18mm */
+  background: #fff;
+  color: var(--ink-800);
+  font-size: calc(var(--card-w) / 30);   /* the whole type scale hangs off this */
+  line-height: 1.25;
+  box-shadow: 0 18px 40px -12px rgba(11, 31, 63, .45), 0 0 0 1px rgba(11, 31, 63, .08);
+}
+.idc-back { transform: rotateY(180deg); }
+
+/* ---- security texture + crest watermark ---- */
+.idc-guilloche {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    repeating-linear-gradient(58deg, rgba(26, 69, 133, .045) 0 .55px, transparent .55px 3.2px),
+    repeating-linear-gradient(-58deg, rgba(201, 162, 39, .05) 0 .55px, transparent .55px 3.2px);
+}
+.idc-watermark {
+  position: absolute; right: -1.6em; top: 28%;
+  width: 9em; opacity: .05; pointer-events: none; z-index: 0;
+}
+.idc > *:not(.idc-guilloche):not(.idc-watermark) { position: relative; z-index: 1; }
+
+/* ---- front: header band ---- */
+.idc-head {
+  display: flex; align-items: center; gap: .55em;
+  padding: .5em .8em;
+  background:
+    linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 55%, var(--navy-700) 100%);
+  border-bottom: .22em solid var(--gold-500);
+  color: #fff;
+  flex-shrink: 0;
+}
+.idc-crest {
+  height: 2.5em; width: 2.5em; flex-shrink: 0;
+  border-radius: .3em; background: #fff; padding: .12em;
+  object-fit: contain;
+}
+.idc-titles { flex: 1; min-width: 0; }
+.idc-titles h2 {
+  margin: 0; font-size: .8em; font-weight: 800; letter-spacing: -.01em;
+  line-height: 1.15;
+}
+.idc-titles p {
+  margin: .12em 0 0; font-size: .54em; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(255, 255, 255, .72);
+}
+/* the little gold contact-plate every real card has */
+.idc-chip {
+  width: 1.5em; height: 1.15em; flex-shrink: 0; border-radius: .18em;
+  background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
+  box-shadow: inset 0 0 0 .06em rgba(255, 255, 255, .45);
+  position: relative;
+}
+.idc-chip::after {
+  content: ""; position: absolute; inset: .22em .3em;
+  border: .05em solid rgba(255, 255, 255, .55); border-radius: .06em;
+}
+
+/* ---- front: body ---- */
+.idc-body {
+  display: flex; gap: .75em; padding: .6em .8em; flex: 1; min-height: 0;
+}
+.idc-photo {
+  height: 100%;                 /* fill the body exactly - never spill into the footer */
+  width: auto;
+  aspect-ratio: 3 / 4;          /* passport proportions */
+  flex-shrink: 0;
+  border-radius: .35em;
+  overflow: hidden;
+  background: linear-gradient(160deg, #eef3fb, #dbe4f2);
+  box-shadow: 0 0 0 .1em #fff, 0 0 0 .17em var(--navy-800), 0 .18em .5em rgba(11, 31, 63, .22);
+  display: flex; align-items: center; justify-content: center;
+}
+.idc-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.idc-initials {
+  font-size: 2.1em; font-weight: 800; color: var(--navy-700); letter-spacing: .02em;
+}
+.idc-details {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  padding: .1em 0 .15em;
+}
+.idc-name {
+  margin: 0; font-size: 1.42em; font-weight: 800; letter-spacing: -.02em;
+  color: var(--navy-900); line-height: 1.05;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.idc-program {
+  margin: .16em 0 0; font-size: .62em; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em; color: var(--navy-700);
+}
+.idc-dept-line {
+  margin: .08em 0 0; font-size: .6em; font-weight: 600; color: var(--ink-600);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* flex:1 + space-between makes the six fields spread over whatever height is
+   left, so no dead band opens up under the name */
+.idc-grid {
+  margin: .35em 0 0; flex: 1;
+  display: grid; grid-template-columns: 1fr 1fr; align-content: space-between;
+  gap: .25em .6em;
+  border-top: .06em solid var(--line); padding-top: .35em;
+}
+.idc-grid dt {
+  font-size: .5em; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--ink-400);
+}
+.idc-grid dd {
+  margin: .06em 0 0; font-size: .72em; font-weight: 700; color: var(--ink-800);
+}
+.mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: .01em;
+}
+.blood { color: #b91c1c; }
+
+/* ---- front: footer ---- */
+.idc-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: .6em;
+  padding: .4em .8em .55em;
+  border-top: .06em solid var(--line);
+  background: linear-gradient(180deg, #fff 0%, #f7f9fc 100%);
+  flex-shrink: 0;
+}
+.idc-dept { min-width: 0; }
+.idc-sign {
+  margin: 0; padding-top: .22em; font-size: .58em; font-weight: 700;
+  color: var(--navy-900); border-top: .07em dotted var(--ink-400);
+  display: inline-block; min-width: 8em;
+}
+.idc-qr { display: flex; flex-direction: column; align-items: center; gap: .12em; flex-shrink: 0; }
+.idc-qr img {
+  height: 3.1em; width: 3.1em; object-fit: contain;
+  background: #fff; border: .07em solid var(--line); border-radius: .25em; padding: .08em;
+}
+.idc-qr span {
+  font-size: .45em; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--ink-400);
+}
+
+/* ---- back ---- */
+.idc-magstripe {
+  height: 3.1em; width: 100%; flex-shrink: 0; z-index: 1;
+  background: linear-gradient(180deg, #1b1b1f 0%, #2c2c33 55%, #17171a 100%);
+}
+.idc-back-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .6em;
+  padding: .55em .8em .35em; flex: 1; min-height: 0;
+}
+.idc-block {
+  min-width: 0;
+  display: flex; flex-direction: column;      /* rows share the panel height */
+  background: #f8fafc;
+  border: .05em solid var(--line);
+  border-radius: .3em;
+  padding: .38em .5em .32em;
+}
+.idc-block h4 {
+  margin: 0 0 .24em; font-size: .52em; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--navy-700);
+  padding-bottom: .18em; border-bottom: .08em solid var(--gold-500);
+  flex-shrink: 0;
+}
+.idc-row {
+  flex: 1;                                     /* stretch so no gap is left below */
+  display: flex; align-items: center; justify-content: space-between; gap: .5em;
+  padding: .1em 0; font-size: .56em; border-bottom: .04em solid #f3f4f6;
+}
+.idc-row:last-child { border-bottom: 0; }
+.idc-row span { color: var(--ink-400); font-weight: 600; flex-shrink: 0; }
+.idc-row b {
+  color: var(--ink-800); font-weight: 700; text-align: right;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.idc-status--active { color: #047857; }
+.idc-status--graduated { color: #1d4ed8; }
+.idc-status--dropped, .idc-status--suspended { color: #b91c1c; }
+
+/* signature strip - the classic ruled panel on the back of a real card */
+.idc-sigstrip {
+  margin: 0 .8em .3em; padding: .35em .6em .2em;
+  background: repeating-linear-gradient(-45deg,
+    #fff 0 .5em, #fdfdfe .5em 1em);
+  border: .05em solid var(--line); border-radius: .25em;
+  flex-shrink: 0;
+}
+.idc-sigline {
+  display: block; height: 1.35em;
+  border-bottom: .06em solid var(--ink-400);
+}
+.idc-siglabel {
+  display: block; margin-top: .1em;
+  font-size: .45em; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--ink-400);
+}
+
+/* decorative bar block; the QR on the front is the scannable code */
+.idc-barcode {
+  display: flex; flex-direction: column; align-items: center; gap: .12em;
+  padding: 0 .8em .25em; flex-shrink: 0;
+}
+.idc-bars {
+  height: 1.5em; width: 100%; border-radius: .1em;
+  background-image: repeating-linear-gradient(90deg,
+    #111 0 .14em, transparent .14em .28em, #111 .28em .34em, transparent .34em .52em,
+    #111 .52em .72em, transparent .72em .8em);
+}
+.idc-barcode .mono {
+  font-size: .56em; font-weight: 700; letter-spacing: .35em; color: var(--ink-600);
+}
+.idc-terms {
+  padding: .3em .8em .45em; border-top: .06em solid var(--line);
+  background: #f9fafb; flex-shrink: 0;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: .6em;
+}
+.idc-terms p { margin: 0; font-size: .45em; line-height: 1.35; color: var(--ink-400); }
+.idc-verify { flex-shrink: 0; font-weight: 700; color: var(--ink-600); }
+
+/* ==========================================================================
+   Print - exact ID-1 size, both faces, one per page
+   ========================================================================== */
+@media print {
+  @page { size: auto; margin: 12mm; }
+
+  .idp-stage {
+    --card-w: 85.6mm;              /* the only thing that changes for paper */
+    display: block; perspective: none;
+  }
+  .idp-flip {
+    position: static; transform: none !important;
+    width: auto; aspect-ratio: auto; transform-style: flat;
+  }
+  .idc {
+    position: static;
+    backface-visibility: visible;
+    transform: none !important;
+    width: 85.6mm; height: 54mm;
+    margin: 0 auto 8mm;
+    box-shadow: 0 0 0 .2mm #d1d5db;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .idc-back { page-break-before: always; }
+}
+
+/* ---- narrow screens ---- */
+@media (max-width: 400px) {
+  .idp-stage { --card-w: 96vw; }
+  .idp-header { align-items: flex-start; }
+  .idp-actions { width: 100%; }
+  .idp-btn { flex: 1; justify-content: center; }
+}
+</style>
+
+{% endblock %}

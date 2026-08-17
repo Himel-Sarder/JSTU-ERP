@@ -1,0 +1,192 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+  <h1 class="page-title">Welcome, {{ request.user.display_name }} <span class="ml-1">&#128075;</span></h1>
+  <p class="page-sub">Department of {{ student.program.department.name }}</p>
+</div>
+
+<!-- Snapshot strip -->
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="stat">
+    <span class="stat-ico bg-emerald-100 text-emerald-700">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-5 9 5-9 5Z"/><path d="M7 11.5V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-4.5"/></svg></span>
+    <div><p class="text-[12px] font-medium text-slate-500">Program</p>
+      <p class="font-display text-[15px] font-bold text-slate-800">{{ student.program.name }}</p></div>
+  </div>
+  <div class="stat">
+    <span class="stat-ico bg-amber-100 text-amber-700">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
+    <div><p class="text-[12px] font-medium text-slate-500">Level / Semester</p>
+      <p class="font-display text-[15px] font-bold text-slate-800">Level {{ student.level }}, Semester {{ student.semester }}</p></div>
+  </div>
+  <div class="stat">
+    <span class="stat-ico bg-sky-100 text-sky-700">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M13 10h5M13 14h3"/></svg></span>
+    <div><p class="text-[12px] font-medium text-slate-500">Student ID</p>
+      <p class="font-display text-[15px] font-bold text-slate-800">{{ student.student_id }}</p></div>
+  </div>
+  <div class="stat">
+    <span class="stat-ico bg-rose-100 text-rose-700">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+    <div><p class="text-[12px] font-medium text-slate-500">CGPA &middot; Session {{ student.session }}</p>
+      <p class="font-display text-[15px] font-bold text-slate-800">{{ cgpa }} <span class="text-[12px] font-medium text-slate-400">/ 4.00</span></p></div>
+  </div>
+</div>
+
+<div class="mt-5 grid gap-5 xl:grid-cols-3">
+
+  <!-- Notice board -->
+  <section class="card xl:col-span-1">
+    <div class="card-head"><h2 class="card-title">Notice board</h2>
+      <a href="{% url 'studentpanel:notices' %}" class="card-link">View all</a></div>
+    <ul class="divide-y divide-slate-50">
+      {% for n in notices %}
+      <li class="flex items-start gap-3 px-5 py-3.5">
+        <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500"></span>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[13.5px] font-medium text-slate-700">{{ n.title }}</p>
+          <p class="mt-0.5 text-[11.5px] text-slate-400">{{ n.get_category_display }} &middot; {{ n.post_date|date:"d M Y" }}</p>
+        </div>
+      </li>
+      {% empty %}<li class="empty">No notices published yet.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- Profile card -->
+  <section class="card xl:col-span-1">
+    <div class="card-head"><h2 class="card-title">My profile</h2></div>
+    <div class="p-5">
+      <div class="grid h-32 w-full max-w-[150px] place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-brand-50">
+        {% if request.user.avatar_url %}<img src="{{ request.user.avatar_url }}" alt="" class="h-full w-full object-cover">
+        {% elif student.photo_url %}<img src="{{ student.photo_url }}" alt="" class="h-full w-full object-cover">
+        {% else %}<span class="font-display text-3xl font-extrabold text-brand-700">{{ request.user.initials }}</span>{% endif %}
+      </div>
+      <dl class="mt-4 space-y-2.5 text-[13px]">
+        <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-400">Name</dt><dd class="font-semibold text-slate-700">{{ request.user.display_name }}</dd></div>
+        <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-400">Student ID</dt><dd class="font-semibold text-slate-700">{{ student.student_id }}</dd></div>
+        <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-400">Department</dt><dd class="font-semibold text-slate-700">{{ student.program.department.code }}</dd></div>
+        <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-400">E-mail</dt><dd class="truncate font-semibold text-slate-700">{{ student.university_email|default:request.user.email }}</dd></div>
+        <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-400">Phone</dt><dd class="font-semibold text-slate-700">{{ student.contact_no|default:"-" }}</dd></div>
+        <div class="flex gap-3"><dt class="w-24 shrink-0 text-slate-400">Address</dt><dd class="font-semibold text-slate-700">{{ student.present_address|default:"-" }}</dd></div>
+      </dl>
+      <a href="{% url 'studentpanel:profile' %}" class="btn mt-5 w-full">View full profile</a>
+    </div>
+  </section>
+
+  <!-- Quick actions + alerts -->
+  <div class="space-y-5 xl:col-span-1">
+    <section class="card">
+      <div class="card-head"><h2 class="card-title">Quick actions</h2></div>
+      <div class="divide-y divide-slate-50">
+        <a href="{% url 'studentpanel:admit_card' %}" class="flex items-center gap-3 px-5 py-3 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-sky-100 text-sky-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
+          Download admit card <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+        <a href="{% url 'studentpanel:results' %}" class="flex items-center gap-3 px-5 py-3 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-100 text-indigo-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+          View exam result <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+        <a href="{% url 'studentpanel:form_fillup' %}" class="flex items-center gap-3 px-5 py-3 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-100 text-emerald-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M9 14l2 2 4-4"/></svg></span>
+          Form fill-up <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+        <a href="{% url 'studentpanel:invoices' %}" class="flex items-center gap-3 px-5 py-3 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-amber-100 text-amber-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6"/></svg></span>
+          Payment invoice <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+        <a href="{% url 'studentpanel:complaints' %}" class="flex items-center gap-3 px-5 py-3 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-rose-100 text-rose-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></span>
+          Complaint / suggestion <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+        <a href="{% url 'studentpanel:feedback' %}" class="flex items-center gap-3 px-5 py-3 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-teal-100 text-teal-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11.5 11 14l4.5-5"/><circle cx="12" cy="12" r="9"/></svg></span>
+          Feedback form <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+      <h3 class="font-display text-[15px] font-bold text-amber-900">Important alerts</h3>
+      <ul class="mt-3 space-y-2.5 text-[13px]">
+        {% if open_deadline %}
+        <li class="flex gap-2.5 text-amber-800">
+          <svg class="mt-px h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17v.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          Complete your form fill-up for {{ open_deadline.exam_title }} before {{ open_deadline.end_date|date:"d M Y" }}.</li>
+        {% endif %}
+        {% if dues %}
+        <li class="flex gap-2.5 text-rose-700">
+          <svg class="mt-px h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.01"/></svg>
+          {{ dues }} unpaid invoice{{ dues|pluralize }}. Settle it to keep your form fill-up moving.</li>
+        {% else %}
+        <li class="flex gap-2.5 text-emerald-700">
+          <svg class="mt-px h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+          No unpaid dues. Thank you.</li>
+        {% endif %}
+      </ul>
+    </section>
+  </div>
+</div>
+
+<div class="mt-5 grid gap-5 lg:grid-cols-2">
+  <!-- Enrolled courses -->
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">My courses ({{ enrolled_total }} &middot; {{ credits }} credits)</h2>
+      <a href="{% url 'studentpanel:enrollments' %}" class="card-link">View all</a></div>
+    <ul class="divide-y divide-slate-50">
+      {% for e in enrollments %}
+      <li class="flex items-center gap-4 px-5 py-3.5">
+        <span class="grid h-11 w-14 shrink-0 place-items-center rounded-lg bg-brand-700 font-display text-[11px] font-bold leading-tight text-white">{{ e.offer.course.course_code }}</span>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[13.5px] font-semibold text-slate-800">{{ e.offer.course.title }}</p>
+          <p class="text-[11.5px] text-slate-400">{{ e.offer.teacher.user.display_name|default:"Teacher to be assigned" }}</p>
+        </div>
+        <span class="text-right text-[12px] text-slate-400">Credit<br><span class="font-display text-[14px] font-bold text-slate-700">{{ e.offer.course.credit }}</span></span>
+      </li>
+      {% empty %}<li class="empty">You are not enrolled in any course this semester.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- Upcoming events -->
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Upcoming events</h2></div>
+    <ul class="divide-y divide-slate-50">
+      {% for ev in events %}
+      <li class="flex items-center gap-4 px-5 py-3.5">
+        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-rose-50 text-center font-display leading-none text-rose-700">
+          <span class="block text-[15px] font-extrabold">{{ ev.start_at|date:"d" }}</span>
+          <span class="block text-[9px] font-bold uppercase">{{ ev.start_at|date:"M" }}</span></span>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-[13.5px] font-medium text-slate-700">{{ ev.title }}</p>
+          <p class="text-[11.5px] text-slate-400">{{ ev.venue }} &middot; {{ ev.start_at|date:"h:i A" }}</p>
+        </div>
+      </li>
+      {% empty %}<li class="empty">Nothing on the calendar right now.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+
+<!-- Student services -->
+<h2 class="mb-3 mt-7 font-display text-lg font-bold text-slate-800">Student services</h2>
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+  <a href="{% url 'studentpanel:id_card' %}" class="card group flex flex-col items-center gap-2 px-4 py-6 text-center transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-600 text-white"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M13 10h5M13 14h3"/></svg></span>
+    <span class="font-display text-[13px] font-bold text-slate-800">Digital ID card</span><span class="text-[11.5px] text-slate-400">View / download</span></a>
+  <a href="{% url 'studentpanel:network' %}" class="card group flex flex-col items-center gap-2 px-4 py-6 text-center transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-sky-600 text-white"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21"/></svg></span>
+    <span class="font-display text-[13px] font-bold text-slate-800">Internet &amp; network</span><span class="text-[11.5px] text-slate-400">View details</span></a>
+  <a href="{% url 'studentpanel:email' %}" class="card group flex flex-col items-center gap-2 px-4 py-6 text-center transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-violet-600 text-white"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></span>
+    <span class="font-display text-[13px] font-bold text-slate-800">University e-mail</span><span class="text-[11.5px] text-slate-400">Access e-mail</span></a>
+  <a href="{% url 'studentpanel:invoices' %}" class="card group flex flex-col items-center gap-2 px-4 py-6 text-center transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-amber-500 text-white"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9 8h6M9 12h6"/></svg></span>
+    <span class="font-display text-[13px] font-bold text-slate-800">Payment invoice</span><span class="text-[11.5px] text-slate-400">View / download</span></a>
+  <a href="{% url 'studentpanel:complaints' %}" class="card group flex flex-col items-center gap-2 px-4 py-6 text-center transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-teal-600 text-white"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.01"/></svg></span>
+    <span class="font-display text-[13px] font-bold text-slate-800">Complaint / suggestion</span><span class="text-[11.5px] text-slate-400">Submit now</span></a>
+  <a href="{% url 'studentpanel:awards' %}" class="card group flex flex-col items-center gap-2 px-4 py-6 text-center transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-rose-500 text-white"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="5"/><path d="m8.5 13.5-1 7.5 4.5-2.5 4.5 2.5-1-7.5"/></svg></span>
+    <span class="font-display text-[13px] font-bold text-slate-800">Awards &amp; achievements</span><span class="text-[11.5px] text-slate-400">View all</span></a>
+</div>
+{% endblock %}

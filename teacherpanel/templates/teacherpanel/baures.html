@@ -1,0 +1,30 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}BAURES repository{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">BAURES research repository</h1>
+  <p class="page-sub">Publications mirrored into the university research repository, and those still to be submitted.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-2">
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Listed in BAURES</h2>
+      <span class="chip bg-emerald-100 text-emerald-700">{{ listed|length }}</span></div>
+    <ul class="divide-y divide-slate-50">
+      {% for p in listed %}
+      <li class="px-5 py-3.5"><p class="text-[13.5px] font-semibold text-slate-800">{{ p.title }}</p>
+        <p class="mt-0.5 text-[12px] text-slate-400">{{ p.journal_name|default:"-" }} &middot; {{ p.year }}</p></li>
+      {% empty %}<li class="empty">Nothing submitted to the repository yet.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Not yet submitted</h2>
+      <span class="chip bg-amber-100 text-amber-700">{{ unlisted|length }}</span></div>
+    <ul class="divide-y divide-slate-50">
+      {% for p in unlisted %}
+      <li class="px-5 py-3.5"><p class="text-[13.5px] font-semibold text-slate-800">{{ p.title }}</p>
+        <p class="mt-0.5 text-[12px] text-slate-400">{{ p.journal_name|default:"-" }} &middot; {{ p.year }}</p></li>
+      {% empty %}<li class="empty">Everything is mirrored into BAURES.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends base_template %}
+{% block title %}{{ notice.title }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <a href="javascript:history.back()" class="mb-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 hover:text-slate-800">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 6-6 6 6 6"/></svg> Back</a>
+  <h1 class="page-title">{{ notice.title }}</h1>
+  <p class="page-sub">{{ notice.get_category_display }} &middot; {{ notice.post_date|date:"d M Y" }} &middot; posted by {{ notice.posted_by.display_name|default:"Registrar" }}</p>
+</div>
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <article class="card p-6 lg:col-span-2">
+    <p class="whitespace-pre-line text-[14px] leading-relaxed text-slate-600">{{ notice.body|default:"No further details were attached to this notice." }}</p>
+    {% if notice.attachment %}
+    <a href="{{ notice.attachment.url }}" class="btn-ghost mt-6">Download attachment</a>
+    {% endif %}
+  </article>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Related notices</h2></div>
+    <ul class="divide-y divide-slate-50">
+      {% for n in related %}
+      <li><a href="{% url 'portal:notice_detail' n.pk %}" class="block px-5 py-3.5 hover:bg-slate-50">
+        <p class="truncate text-[13.5px] font-medium text-slate-700">{{ n.title }}</p>
+        <p class="mt-0.5 text-[11.5px] text-slate-400">{{ n.post_date|date:"d M Y" }}</p></a></li>
+      {% empty %}<li class="empty">Nothing related.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

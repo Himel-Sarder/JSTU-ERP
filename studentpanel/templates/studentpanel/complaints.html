@@ -1,0 +1,52 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Complaint / suggestion box{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Complaint &amp; suggestion box</h1>
+  <p class="page-sub">Write to the Vice-Chancellor, Registrar, Proctor, Librarian, Accounts or the ICT Cell. Anonymous submissions store no identity at all.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-5">
+  <form method="post" class="card lg:col-span-3">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">New submission</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="kind">Type</label>
+          <select id="kind" name="kind" class="input">{% for v, l in kinds %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="label" for="to">Send to</label>
+          <select id="to" name="report_to" class="input">{% for v, l in offices %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+      </div>
+      <div><label class="label" for="sub">Subject</label>
+        <input id="sub" name="subject" class="input" required maxlength="160" placeholder="One line that sums it up"></div>
+      <div><label class="label" for="msg">Details</label>
+        <textarea id="msg" name="message" rows="6" class="input" required placeholder="What happened, where, and when. Add anything that would help the office act on it."></textarea></div>
+
+      <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <input type="checkbox" name="is_anonymous" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+        <span><span class="block text-[13.5px] font-semibold text-slate-700">Submit anonymously</span>
+          <span class="block text-[12px] text-slate-500">Your identity is not written to the database &mdash; not hidden, not stored. You will still get a tracking code.</span></span>
+      </label>
+
+      <button class="btn w-full sm:w-auto" type="submit">Submit</button>
+    </div>
+  </form>
+
+  <section class="card lg:col-span-2">
+    <div class="card-head"><h2 class="card-title">My submissions</h2></div>
+    <ul class="divide-y divide-slate-50">
+      {% for c in mine %}
+      <li class="px-5 py-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="truncate text-[13.5px] font-semibold text-slate-800">{{ c.subject }}</p>
+            <p class="mt-0.5 text-[11.5px] text-slate-400">{{ c.tracking_code }} &middot; to {{ c.get_report_to_display }} &middot; {{ c.created_at|date:"d M Y" }}</p>
+          </div>
+          <span class="chip shrink-0 {% if c.status == 'RESOLVED' %}bg-emerald-100 text-emerald-700{% elif c.status == 'SUBMITTED' %}bg-sky-100 text-sky-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ c.get_status_display }}</span>
+        </div>
+        {% if c.response %}
+        <p class="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[12.5px] text-slate-600"><span class="font-semibold">Reply:</span> {{ c.response }}</p>
+        {% endif %}
+      </li>
+      {% empty %}<li class="empty">Nothing submitted yet. Anonymous items do not appear in this list.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

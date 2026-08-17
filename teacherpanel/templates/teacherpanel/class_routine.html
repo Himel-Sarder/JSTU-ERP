@@ -1,0 +1,27 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}Class routine{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="page-title">Class routine</h1>
+    <p class="page-sub">Weekly teaching schedule published by the Registrar's Office.</p></div>
+  <button onclick="window.print()" class="btn-ghost print:hidden">Print routine</button>
+</div>
+
+<div class="grid gap-4 lg:grid-cols-5">
+  {% for code, label in days %}
+  <section class="card">
+    <div class="border-b border-slate-100 bg-slate-50/70 px-4 py-3">
+      <h2 class="font-display text-[13px] font-bold uppercase tracking-wide text-slate-600">{{ label }}</h2></div>
+    <ul class="divide-y divide-slate-50">
+      {% for c in routine %}{% if c.day == code %}
+      <li class="px-4 py-3">
+        <p class="font-mono text-[13px] font-bold text-brand-700">{{ c.offer.course.course_code }}</p>
+        <p class="mt-0.5 truncate text-[12px] text-slate-500">{{ c.offer.course.title }}</p>
+        <p class="mt-1.5 text-[11.5px] font-medium text-slate-400">{{ c.start_time|time:"h:i A" }} &ndash; {{ c.end_time|time:"h:i A" }} &middot; {{ c.room }}</p>
+      </li>
+      {% endif %}{% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

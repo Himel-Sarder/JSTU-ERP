@@ -1,0 +1,724 @@
+{% load static %}<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>পরীক্ষায় অংশ গ্রহণের আবেদনপত্র — জামালপুর বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================================
+   Jamalpur Science and Technology University
+   Application for participation in examination (Undergraduate)
+
+   Reproduced at the source document's own coordinates.
+   Page is 612 x 1008 pt = 8.5in x 14in (US Legal / Folio) —
+   NOT A4. Printing on A4 will scale it down.
+   =========================================================== */
+
+@page { size: 8.5in 15in; margin: 0; }   /* 14in of form + 0.5in head and foot */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { background: #7c828c; }
+
+body {
+  font-family: "Noto Serif Bengali", "SolaimanLipi", "Nikosh", "Kalpurush", serif;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The paper. 36pt (half an inch) of blank margin is held at the head and the
+   foot, so the printed sheet is 8.5 x 15in and the form block inside it keeps
+   the source document's own 612 x 1008pt coordinates untouched. */
+.page {
+  position: relative;
+  width: 612pt;
+  height: 1080pt;
+  padding: 36pt 0;
+  margin: 24px auto;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 6px 28px rgba(0,0,0,.35);
+}
+/* every .at element is positioned against this, not against the paper */
+.sheet { position: relative; width: 100%; height: 100%; }
+
+/* every positioned element is placed in points, exactly as in the source */
+.at { position: absolute; }
+
+/* ---------- masthead ---------- */
+.office     { top: 8pt;   left: 26pt;  font-size: 11pt; font-weight: 700; }
+.uni        { top: 18pt;  left: 0;     width: 612pt; text-align: center;
+              font-size: 14pt; font-weight: 700; }
+.crest      { top: 38.7pt; left: 277.4pt; width: 57.6pt; height: 54.3pt; }
+
+/* two stacked identity boxes, left */
+.idbox { left: 66.6pt; width: 143.7pt; border: 1px solid #000; }
+.idbox .lab { height: 15.8pt; border-bottom: 1px solid #000; text-align: center;
+              font-size: 11.5pt; font-weight: 700; line-height: 15.8pt; }
+.idbox .fld { }
+.box-id      { top: 55.8pt; }
+.box-id  .fld { height: 22pt; }
+.box-ses     { top: 104.5pt; }
+.box-ses .fld { height: 16.1pt; }
+
+/* passport photo box, right */
+.photo { top: 47pt; left: 447pt; width: 81.2pt; height: 104.8pt;
+         border: 1px solid #000; display: flex; align-items: center;
+         justify-content: center; text-align: center; font-size: 11pt;
+         line-height: 1.45; }
+
+/* ---------- titles ---------- */
+/* full page width so it centres on the sheet; the rule is on the inner span
+   so it hugs the text instead of following a fixed box */
+.ftitle  { top: 112pt; left: 0; width: 612pt; text-align: center;
+           font-size: 12.5pt; font-weight: 700; }
+.ftitle span { display: inline-block; white-space: nowrap;
+               border-bottom: 1.1pt solid #000; padding-bottom: 3.5pt; }
+/* spans the full page so it centres on the sheet, and sized to sit inside
+   the rule beneath it rather than spilling past both ends */
+.degrees { top: 152.5pt; left: 0; width: 612pt; text-align: center;
+           font-size: 11pt; font-weight: 700;
+           white-space: nowrap; overflow: visible; }
+.semester{ top: 173.5pt; left: 0; width: 612pt; text-align: center;
+           font-size: 14pt; font-weight: 700; }
+.degrees-rule { top: 168.4pt; left: 115.5pt; width: 381.1pt;
+                border-top: 1.1pt solid #000; }
+
+/* ---------- numbered items ---------- */
+.row { left: 57.6pt; width: 497.7pt; font-size: 13pt; display: flex;
+       align-items: baseline; white-space: nowrap; }
+.row .n   { flex: none; }
+.row .lbl { flex: none; }
+
+/* dot leader: a long run of periods, clipped to the space left over.
+   Matches the source, which uses typed full stops rather than a rule. */
+.dots { flex: 1 1 0; overflow: hidden; letter-spacing: .4pt; min-width: 0; }
+.dots::before {
+  content: "........................................................................"
+           "........................................................................"
+           "........................................................................";
+}
+
+.sub { left: 75.6pt; font-size: 13pt; }
+.sub .dia { font-size: 10pt; vertical-align: 1pt; padding-right: 6pt; }
+
+/* ---------- course table ---------- */
+.tblhead { top: 551pt; left: 57.6pt; font-size: 13pt; font-weight: 700; }
+table.courses {
+  position: absolute; top: 576.6pt; left: 56.8pt;
+  width: 498.5pt; border-collapse: collapse; table-layout: fixed;
+}
+table.courses th, table.courses td { border: .75pt solid #000; }
+table.courses th { height: 18.3pt; font-size: 13pt; font-weight: 700; }
+table.courses td { height: 21.1pt; }
+table.courses col.c1 { width: 89.9pt; }
+table.courses col.c2 { width: 330.9pt; }
+table.courses col.c3 { width: 77.7pt; }
+
+/* ---------- declaration & signatures ---------- */
+.declare { top: 812pt; left: 57.6pt; width: 497.7pt; font-size: 11.5pt;
+           line-height: 14pt; text-align: justify; }
+.declare b { font-weight: 700; }
+
+.sig-student { top: 878pt; left: 417.7pt; width: 137pt; text-align: center;
+               font-size: 13pt; }
+.sig-student .line { border-top: 1px solid #000; width: 106pt; margin: 0 auto 4pt; }
+
+.recommend { top: 906pt; left: 57.6pt; width: 497.7pt; font-size: 12pt;
+             line-height: 15.4pt; }
+.recommend b { font-weight: 700; }
+
+/* pushed down so there is blank room to sign above each rule */
+.sig-provost  { top: 978pt; left: 63pt;    width: 190pt; text-align: center; font-size: 12.5pt; }
+.sig-chairman { top: 978pt; left: 349.3pt; width: 205pt; text-align: center; font-size: 12.5pt; }
+.sig-provost .line, .sig-chairman .line { border-top: 1px solid #000; margin: 0 auto 4pt; }
+.sig-provost .line  { width: 132pt; }
+.sig-chairman .line { width: 165pt; }
+
+/* ---------- examinee type: click one, it gets ticked ---------- */
+.etype { position: relative; flex: none; padding: 0 2pt; cursor: pointer; }
+.etype:hover { background: #fff3c4; }
+.etype.sel { font-weight: 700; }
+/* the tick sits above the chosen words, the way it is marked by hand */
+.etype.sel::before {
+  content: "\2713"; position: absolute; top: -11pt; left: 50%;
+  transform: translateX(-50%);
+  font-size: 13pt; font-weight: 700; line-height: 1;
+}
+.etype-hint { flex: none; padding-left: 10pt; font-size: 10pt; color: #b45309;
+  font-family: Inter, system-ui, sans-serif; }
+
+/* ---------- filled-in values ---------- */
+/* Written over the dot leaders, so the form keeps the printed layout. */
+.val { flex: none; font-weight: 600; padding: 0 5pt; white-space: nowrap; }
+.val-en { font-family: Arial, Helvetica, sans-serif; font-size: 11.5pt; }
+.box-id .fld, .box-ses .fld { display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 12pt; }
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+.sig-student .sig-img { position: absolute; bottom: 30pt; left: 50%;
+  transform: translateX(-50%); max-height: 34pt; max-width: 120pt; }
+
+/* ---------- screen / print ---------- */
+.toolbar { position: fixed; top: 0; left: 0; right: 0; z-index: 9;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 10px; background: rgba(22,26,32,.94); }
+.toolbar button, .toolbar a { font-family: inherit; font-size: 13px;
+  font-weight: 600; padding: 7px 18px; border: 0; border-radius: 6px;
+  background: #fff; color: #1f2430; cursor: pointer; text-decoration: none; }
+.toolbar button:hover, .toolbar a:hover { background: #e8ebf0; }
+.toolbar .primary { background: #16803c; color: #fff; }
+.toolbar .primary:hover { background: #116232; }
+.toolbar .ghost { background: transparent; color: #cbd3de;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+.toolbar .msg { color: #cbd3de; font-size: 12.5px; margin-right: auto;
+  padding-left: 6px; }
+body { padding-top: 52px; }
+
+/* tells the student which personal details are still blank on the form */
+.gap-note { position: fixed; top: 52px; left: 0; right: 0; z-index: 8;
+  padding: 9px 16px; background: #fef3c7; border-bottom: 1px solid #fcd34d;
+  color: #78350f; font-family: Inter, system-ui, sans-serif; font-size: 12.5px; }
+.gap-note a { color: #78350f; font-weight: 700; }
+body.has-gap { padding-top: 90px; }
+body.has-gap .drawer { top: 90px; }
+
+/* ---------- slide-out course drawer ---------- */
+.drawer {
+  position: fixed; top: 52px; right: 0; bottom: 0; width: 380px; max-width: 92vw;
+  background: #fff; z-index: 8; box-shadow: -8px 0 30px rgba(0,0,0,.28);
+  transform: translateX(100%); transition: transform .35s cubic-bezier(.4,.2,.2,1);
+  display: flex; flex-direction: column;
+  font-family: Inter, system-ui, sans-serif;
+}
+.drawer.open { transform: translateX(0); }
+
+/* the tab that pulls the drawer out - label centred, arrow and grip pinned to
+   the ends so they never push the text off centre */
+.handle {
+  position: absolute; top: 50%; left: -40px; transform: translateY(-50%);
+  width: 40px; height: 180px; border: 0; cursor: pointer; overflow: hidden;
+  background: linear-gradient(158deg, #29b862 0%, #16803c 45%, #0d5228 100%);
+  color: #fff;
+  border-radius: 12px 0 0 12px;
+  box-shadow: -8px 0 20px rgba(11,59,33,.36),
+              inset 1px 0 0 rgba(255,255,255,.22),
+              inset 0 1px 0 rgba(255,255,255,.14);
+  display: flex; align-items: center; justify-content: center;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+  transition: width .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+.handle:hover { width: 46px; filter: brightness(1.06);
+  box-shadow: -12px 0 26px rgba(11,59,33,.48),
+              inset 1px 0 0 rgba(255,255,255,.28); }
+.handle:active { filter: brightness(.96); }
+/* arrow at the bottom, grip dots at the top - both out of the text's way */
+.handle .tri {
+  position: absolute; left: 0; right: 0; bottom: 11px;
+  writing-mode: horizontal-tb; text-align: center;
+  font-size: 13px; line-height: 1; opacity: .95;
+}
+.handle .grip {
+  position: absolute; left: 0; right: 0; top: 11px;
+  writing-mode: horizontal-tb; text-align: center;
+  font-size: 12px; letter-spacing: 2px; line-height: 1; opacity: .5;
+}
+
+.drawer-head { padding: 14px 16px; border-bottom: 1px solid #e5e7eb; }
+.drawer-head h3 { font-size: 14px; font-weight: 800; color: #0f172a; }
+.drawer-head p { font-size: 12px; color: #64748b; margin-top: 2px; }
+.drawer-filters { display: flex; gap: 8px; padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb; background: #f8fafc; }
+.drawer-filters label { flex: 1; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
+.drawer-filters select { width: 100%; margin-top: 4px; padding: 7px 8px;
+  font-family: inherit; font-size: 13px; border: 1px solid #cbd5e1;
+  border-radius: 8px; background: #fff; color: #0f172a; }
+.drawer-list { flex: 1; overflow-y: auto; padding: 10px 12px; }
+.course-btn { width: 100%; text-align: left; display: flex; align-items: center;
+  gap: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  font-family: inherit; transition: all .15s ease; }
+.course-btn:hover { border-color: #16803c; background: #f0fdf4; }
+.course-btn[disabled] { opacity: .45; cursor: not-allowed; background: #f8fafc; }
+.course-btn .code { font-family: ui-monospace, Consolas, monospace;
+  font-size: 12.5px; font-weight: 700; color: #0f172a; }
+.course-btn .name { font-size: 12.5px; color: #475569; }
+.course-btn .cr { margin-left: auto; font-size: 11.5px; font-weight: 700;
+  color: #16803c; white-space: nowrap; }
+.drawer-empty { padding: 30px 10px; text-align: center; font-size: 13px;
+  color: #94a3b8; }
+
+/* ---------- signature panel inside the drawer ---------- */
+.sig-panel { border-top: 1px solid #e5e7eb; padding: 16px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); }
+.sig-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.sig-head h4 { font-size: 11.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .1em; color: #475569; }
+.sig-head .pill { margin-left: auto; padding: 3px 9px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .06em; background: #e2e8f0; color: #64748b; }
+.sig-head .pill.on { background: #dcfce7; color: #15803d; }
+
+/* the saved signature, shown sitting on a ruled line like it will print */
+.sig-card { position: relative; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.05), inset 0 0 0 3px #fff;
+  padding: 14px 14px 20px; text-align: center; }
+.sig-card img { max-height: 56px; max-width: 100%; display: inline-block; }
+.sig-card::after { content: ""; position: absolute; left: 22px; right: 22px;
+  bottom: 14px; border-bottom: 1px dashed #cbd5e1; }
+
+/* empty state - the whole box is the file picker */
+.sig-drop { display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 20px 14px; cursor: pointer; text-align: center;
+  background: #fff; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+  transition: border-color .18s ease, background .18s ease; }
+.sig-drop:hover { border-color: #16803c; background: #f0fdf4; }
+.sig-drop svg { height: 22px; width: 22px; color: #16803c; }
+.sig-drop .t { font-size: 13px; font-weight: 700; color: #0f172a; }
+.sig-drop .s { font-size: 11.5px; color: #94a3b8; }
+
+/* NOT .row - that class belongs to the form's numbered lines and carries a
+   fixed 497.7pt width, which overflowed the drawer */
+.sig-row { display: flex; gap: 8px; margin-top: 10px; }
+.sig-panel button { display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 9px 10px; font-family: inherit; font-size: 12.5px;
+  font-weight: 700; border: 0; border-radius: 10px; cursor: pointer;
+  transition: background .18s ease, color .18s ease; }
+.sig-panel button svg { height: 14px; width: 14px; }
+.sig-add { flex: 1; background: #16803c; color: #fff; }
+.sig-add:hover { background: #116232; }
+.sig-add.on { background: #fee2e2; color: #b91c1c; }
+.sig-add.on:hover { background: #fecaca; }
+/* the drawer is narrow, so "Replace" sits under the primary button as a link */
+.sig-foot { display: flex; align-items: flex-start; gap: 10px; margin-top: 9px; }
+.sig-hint { flex: 1; font-size: 11px; line-height: 1.4; color: #94a3b8; }
+.sig-link { flex: none; padding: 0; background: none; color: #16803c;
+  font-size: 11.5px; font-weight: 700; text-decoration: underline; }
+.sig-link:hover { color: #0d5228; }
+
+/* the red minus that lifts a course back off the form */
+.rm { position: absolute; right: -20pt; top: 50%; transform: translateY(-50%);
+  width: 15pt; height: 15pt; border: 0; border-radius: 50%; cursor: pointer;
+  background: #dc2626; color: #fff; font-size: 13pt; line-height: 1;
+  font-weight: 700; display: flex; align-items: center; justify-content: center;
+  font-family: Inter, system-ui, sans-serif; }
+.rm:hover { background: #991b1b; }
+table.courses td { position: relative; }
+
+@media print {
+  html, body { background: #fff; padding: 0; }
+  .toolbar, .drawer, .handle, .rm, .gap-note, .etype-hint { display: none !important; }
+  body.has-gap { padding-top: 0; }
+  .etype { cursor: default; }
+  .etype:hover { background: none; }
+  .page { margin: 0; box-shadow: none; width: 100%; height: 100%;
+          page-break-after: avoid; }
+}
+</style>
+</head>
+<body{% if student.missing_form_details %} class="has-gap"{% endif %}>
+
+{% if student.missing_form_details %}
+<div class="gap-note">
+  These details are blank on your record, so they print empty on the form:
+  <b>{% for m in student.missing_form_details %}{{ m }}{% if not forloop.last %}, {% endif %}{% endfor %}</b>.
+  <a href="{% url 'studentpanel:guardian' %}">Fill them in &rarr;</a>
+  then reopen this form.
+</div>
+{% endif %}
+
+<div class="toolbar">
+  <span class="msg">{{ deadline.exam_title }} &middot; {{ student.student_id }}
+    {% if messages %}{% for m in messages %}&middot; {{ m }}{% endfor %}{% endif %}</span>
+  <a class="ghost" href="{% url 'studentpanel:form_fillup' %}">&larr; Back</a>
+  <button type="button" onclick="window.print()">Print</button>
+  <button type="submit" form="examForm" name="action" value="save">Save</button>
+  <button type="submit" form="examForm" name="action" value="done" class="primary">Done</button>
+</div>
+
+{# carries the chosen courses and the signature flag #}
+<form id="examForm" method="post"></form>
+<form id="sigForm" method="post" enctype="multipart/form-data" style="display:none">
+  {% csrf_token %}<input type="hidden" name="action" value="signature">
+</form>
+{{ catalogue|json_script:"catalogue" }}
+{{ chosen_ids|json_script:"chosenIds" }}
+
+<aside class="drawer" id="drawer">
+  <button type="button" class="handle" id="handle" aria-expanded="false">
+    <span class="grip" aria-hidden="true">&#8942;</span>
+    <span class="label">Add course</span>
+    <span class="tri" id="tri" aria-hidden="true">&#9664;</span>
+  </button>
+
+  <div class="drawer-head">
+    <h3>Add courses to the form</h3>
+    <p>Pick the year and semester, then click a course to place it on the form.</p>
+  </div>
+
+  <div class="drawer-filters">
+    <label>Year
+      <select id="fYear">
+        {% for v, l in years %}
+        <option value="{{ v }}" {% if student.level == v %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Semester
+      <select id="fSem">
+        {% for s in semesters %}
+        <option value="{{ s }}" {% if student.semester == s %}selected{% endif %}>Semester {{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <div class="drawer-list" id="courseList"></div>
+
+  <div class="sig-panel">
+    <div class="sig-head">
+      <h4>Signature</h4>
+      {% if student.signature %}
+      <span class="pill {% if fillup.signed %}on{% endif %}" id="sigPill">
+        {% if fillup.signed %}on the form{% else %}not added{% endif %}</span>
+      {% endif %}
+    </div>
+
+    {% if student.signature %}
+    <div class="sig-card"><img src="{{ student.signature.url }}" alt="Your saved signature"></div>
+    <div class="sig-row">
+      <button type="button" class="sig-add" id="sigToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span id="sigToggleText">Add to form</span>
+      </button>
+    </div>
+    <div class="sig-foot">
+      <span class="sig-hint">Saved to your profile &mdash; reused on every form.</span>
+      <button type="button" class="sig-link" id="sigChange" title="Upload a different signature">Replace</button>
+    </div>
+    <input type="file" id="sigFile" name="signature" accept="image/*" form="sigForm"
+           hidden onchange="if(this.files.length) submitSignature();">
+    {% else %}
+    <label class="sig-drop" for="sigFile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.5c3-1 4.5-6 6.5-9.5S13 3 14 4.5s-1.5 5-3 8-2 4 0 4 4-1.5 5.5-3"/><path d="M4 21h16"/></svg>
+      <span class="t">Upload your signature</span>
+      <span class="s">PNG or JPG &middot; saved for future forms</span>
+    </label>
+    <input type="file" id="sigFile" name="signature" accept="image/*" form="sigForm"
+           hidden onchange="if(this.files.length) submitSignature();">
+    {% endif %}
+  </div>
+</aside>
+
+<div class="page">
+ <div class="sheet">
+
+  <!-- masthead -->
+  <div class="at office">পরীক্ষা নিয়ন্ত্রণ দপ্তর</div>
+  <div class="at uni">জামালপুর বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়, জামালপুর</div>
+  <img class="at crest" src="data:image/png;base64,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" alt="">
+
+  <div class="at idbox box-id">
+    <div class="lab">শিক্ষার্থীর আইডি নম্বর</div>
+    <div class="fld val-en">{{ student.student_id }}</div>
+  </div>
+  <div class="at idbox box-ses">
+    <div class="lab">শিক্ষাবর্ষ/ সেশন</div>
+    <div class="fld val-en">{{ student.session }}</div>
+  </div>
+
+  <div class="at photo">
+    {% if student.user.avatar_url %}<img src="{{ student.user.avatar_url }}" alt="">
+    {% elif student.photo_url %}<img src="{{ student.photo_url }}" alt="">
+    {% else %}পাসপোর্ট সাইজের<br>রঙিন ছবি{% endif %}
+  </div>
+
+  <!-- titles -->
+  <div class="at ftitle"><span>পরীক্ষায় অংশ গ্রহণের আবেদনপত্র</span></div>
+  <div class="at degrees">বিএসসি (সম্মান)/ বিএসসি (ইঞ্জিনিয়ারিং)/ বিএসসি(ফিশারিজ)/ বিএসএস (সম্মান)/ বিবিএ</div>
+  <div class="at degrees-rule"></div>
+  <div class="at semester">
+    {{ year_bn }} বর্ষ {{ semester_bn }} সেমিস্টার ফাইনাল পরীক্ষা, {{ calendar_year_bn }}
+  </div>
+
+  <!-- 1 -->
+  <div class="at row" style="top:199pt">
+    <span class="lbl">১। বিভাগের নাম:&nbsp;</span>
+    <span class="val val-en">{{ student.program.department.name }}</span><span class="dots"></span>
+  </div>
+
+  <!-- 2 -->
+  <div class="at row" style="top:223.5pt">
+    <span class="lbl">২। পরীক্ষার্থীর ধরণ :&nbsp;</span>
+    <span class="etype" data-type="REGULAR" title="Click to select">নিয়মিত</span>
+    <span class="lbl">&nbsp;/&nbsp;</span>
+    <span class="etype" data-type="IRREGULAR" title="Click to select">অনিয়মিত</span>
+    <span class="lbl">&nbsp;/&nbsp;</span>
+    <span class="etype" data-type="IMPROVEMENT" title="Click to select">মান উন্নয়ন</span>
+    <span class="etype-hint">&larr; একটি বেছে নিন / pick one</span>
+  </div>
+  <div class="at sub" style="top:248pt">
+    <span class="dia">&#10070;</span>৩,৪,৫ নং ক্রমিকের তথ্যসমূহ মাধ্যমিক/ সমমান পরীক্ষার সনদ অনুযায়ী:-
+  </div>
+
+  <!-- 3 -->
+  <div class="at row" style="top:273pt">
+    <span class="lbl">৩। পরীক্ষার্থীর নাম</span>
+  </div>
+  <div class="at row" style="top:297.5pt; left:75.6pt; width:479.7pt">
+    <span class="lbl" style="width:130pt">ক) (স্পষ্টাক্ষরে বাংলায়)</span><span class="lbl">:</span>
+    <span class="val">{{ student.name_bn }}</span><span class="dots"></span>
+  </div>
+  <div class="at row" style="top:323pt; left:75.6pt; width:479.7pt">
+    <span class="lbl" style="width:130pt">খ) (বড় অক্ষরে ইংরেজিতে)</span><span class="lbl">:</span>
+    <span class="val val-en">{{ student.user.display_name|upper }}</span><span class="dots"></span>
+  </div>
+
+  <!-- 4 -->
+  <div class="at row" style="top:348pt">
+    <span class="lbl">৪। মাতার নাম (বাংলায়):</span>
+    <span class="val">{{ student.mother_name_bn }}</span><span class="dots" style="flex-grow:38"></span>
+    <span class="lbl">ইংরেজিতে:</span>
+    <span class="val val-en">{{ student.mother_display }}</span><span class="dots" style="flex-grow:37"></span>
+  </div>
+
+  <!-- 5 -->
+  <div class="at row" style="top:372.5pt">
+    <span class="lbl">৫। পিতার নাম (বাংলায়):</span>
+    <span class="val">{{ student.father_name_bn }}</span><span class="dots" style="flex-grow:38"></span>
+    <span class="lbl">ইংরেজিতে:</span>
+    <span class="val val-en">{{ student.father_display }}</span><span class="dots" style="flex-grow:37"></span>
+  </div>
+
+  <!-- 6 -->
+  <div class="at row" style="top:397pt">
+    <span class="lbl" style="width:82pt">৬। স্থায়ী ঠিকানা</span><span class="lbl">:&nbsp;</span>
+    <span class="val val-en">{{ student.permanent_address }}</span><span class="dots"></span>
+  </div>
+
+  <!-- 7 -->
+  <div class="at row" style="top:421.5pt">
+    <span class="lbl" style="width:82pt">৭। বর্তমান ঠিকানা</span><span class="lbl">:&nbsp;</span>
+    <span class="val val-en">{{ student.present_address }}</span><span class="dots"></span>
+  </div>
+
+  <!-- 8 -->
+  <div class="at row" style="top:446pt">
+    <span class="lbl">৮। হলের নাম (আবাসিক/অনাবাসিক):</span><span class="dots" style="flex-grow:66"></span>
+    <span class="lbl">&nbsp;কোড:&nbsp;</span><span class="dots" style="flex-grow:14"></span>
+  </div>
+
+  <!-- 9 -->
+  <div class="at row" style="top:470.5pt">
+    <span class="lbl" style="width:82pt">৯। জাতীয়তা</span><span class="lbl">:&nbsp;</span>
+    <span class="val">বাংলাদেশী</span><span class="dots" style="flex-grow:34"></span>
+    <span class="lbl">ধর্ম:</span>
+    <span class="val val-en">{{ student.get_religion_display }}</span><span class="dots" style="flex-grow:42"></span>
+    {# বর্ণ is left for the student to write by hand #}
+    <span class="lbl">বর্ণ:</span><span class="dots" style="flex-grow:39"></span>
+  </div>
+
+  <!-- 10 -->
+  <div class="at row" style="top:495pt">
+    <span class="lbl">১০। মোবাইল নং :&nbsp;</span>
+    <span class="val val-en">{{ student.contact_no }}</span><span class="dots"></span>
+  </div>
+
+  <!-- 11 -->
+  <div class="at row" style="top:519.5pt">
+    <span class="lbl">১১। পরীক্ষার্থী ইতোপূর্বে এই পরীক্ষায় অংশগ্রহণ করে থাকলে তার বিবরণ:</span><span class="dots"></span>
+  </div>
+  <div class="at row" style="top:534.5pt">
+    <span class="dots"></span>
+  </div>
+
+  <!-- course table -->
+  <div class="at tblhead">যে সমস্ত বিষয়ে পরীক্ষার্থী পরীক্ষা দিতে ইচ্ছুক তার বিস্তারিত বিবরণ:</div>
+  <table class="courses">
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead>
+      <tr><th>পত্র/ কোর্স কোড</th><th>পত্র/কোর্সের পুরো নাম</th><th>ক্রেডিট</th></tr>
+    </thead>
+    <tbody id="courseRows"><!-- filled by the drawer --></tbody>
+  </table>
+
+  <!-- declaration -->
+  <div class="at declare">
+    <b>অঙ্গীকার:</b> উল্লিখিত তথ্যাবলী স্বহস্তে লিখিত ও সত্য। পরীক্ষার জন্য নির্ধারিত ফি প্রদান করেছি। পরীক্ষায় অংশ গ্রহণের অনুমতি
+    প্রদানের জন্য অনুরোধ করছি। দেয় তথ্যে কোন গরমিল পরিলক্ষিত হলে কর্তৃপক্ষের সিদ্ধান্ত চূড়ান্ত বলে মেনে নিতে বাধ্য থাকব।
+  </div>
+
+  <div class="at sig-student">
+    {% if student.signature %}
+    <img id="sigOnForm" class="sig-img" src="{{ student.signature.url }}" alt=""
+         style="{% if not fillup.signed %}display:none{% endif %}">
+    {% endif %}
+    <div class="line"></div>
+    পরীক্ষার্থীর স্বাক্ষর ও তারিখ
+  </div>
+
+  <div class="at recommend">
+    <b>সুপারিশ:</b> আবেদনকারী পরীক্ষার্থীর ক্লাশ উপস্থিতি..............%। তাকে পরীক্ষায় অংশগ্রহণের অনুমতি প্রদানের জন্য সুপারিশ করছি।
+  </div>
+
+  <div class="at sig-provost">
+    <div class="line"></div>
+    (সিলসহ) প্রাধ্যক্ষের স্বাক্ষর ও তারিখ
+  </div>
+  <div class="at sig-chairman">
+    <div class="line"></div>
+    (সিলসহ) চেয়ারম্যান এর স্বাক্ষর ও তারিখ
+  </div>
+
+ </div>
+</div>
+
+<script>
+(function () {
+  const CATALOGUE = JSON.parse(document.getElementById('catalogue').textContent);
+  const chosen = JSON.parse(document.getElementById('chosenIds').textContent);
+  const ROWS = 10;                       // the printed form has ten ruled rows
+
+  const form = document.getElementById('examForm');
+  const tbody = document.getElementById('courseRows');
+  const list = document.getElementById('courseList');
+  const drawer = document.getElementById('drawer');
+
+  form.insertAdjacentHTML('beforeend',
+    '{% csrf_token %}'.replace(/\n/g, '') +
+    '<input type="hidden" name="include_signature" id="sigFlag" value="{% if fillup.signed %}1{% endif %}">' +
+    '<input type="hidden" name="examinee_type" id="etypeFlag" value="{{ fillup.examinee_type }}">');
+
+  // examinee type - clicking a word ticks it, clicking it again clears it
+  const etypeFlag = document.getElementById('etypeFlag');
+  const etypes = document.querySelectorAll('.etype');
+  function paintTypes() {
+    etypes.forEach(el => el.classList.toggle('sel', el.dataset.type === etypeFlag.value));
+    const hint = document.querySelector('.etype-hint');
+    if (hint) hint.style.display = etypeFlag.value ? 'none' : '';
+  }
+  etypes.forEach(el => {
+    el.onclick = () => {
+      etypeFlag.value = etypeFlag.value === el.dataset.type ? '' : el.dataset.type;
+      paintTypes();
+    };
+  });
+  paintTypes();
+
+  const byId = id => CATALOGUE.find(c => c.id === id);
+
+  function drawForm() {
+    tbody.innerHTML = '';
+    for (let i = 0; i < ROWS; i++) {
+      const c = byId(chosen[i]);
+      const tr = document.createElement('tr');
+      if (c) {
+        tr.innerHTML =
+          '<td class="val-en" style="padding:0 4pt">' + c.code + '</td>' +
+          '<td class="val-en" style="padding:0 4pt">' + c.title + '</td>' +
+          '<td class="val-en" style="text-align:center">' + c.credit + '</td>';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rm';
+        btn.title = 'Remove ' + c.code + ' from the form';
+        btn.textContent = '−';
+        btn.onclick = () => { chosen.splice(chosen.indexOf(c.id), 1); drawForm(); drawList(); };
+        tr.lastElementChild.appendChild(btn);
+      } else {
+        tr.innerHTML = '<td></td><td></td><td></td>';
+      }
+      tbody.appendChild(tr);
+    }
+    // hidden inputs are what actually gets posted
+    form.querySelectorAll('input[name=courses]').forEach(n => n.remove());
+    chosen.forEach(id => {
+      const i = document.createElement('input');
+      i.type = 'hidden'; i.name = 'courses'; i.value = id;
+      form.appendChild(i);
+    });
+  }
+
+  function drawList() {
+    const y = +document.getElementById('fYear').value;
+    const s = +document.getElementById('fSem').value;
+    const rows = CATALOGUE.filter(c => c.year === y && c.semester === s);
+    list.innerHTML = '';
+    if (!rows.length) {
+      list.innerHTML = '<p class="drawer-empty">No courses are offered for this year and semester.</p>';
+      return;
+    }
+    rows.forEach(c => {
+      const on = chosen.includes(c.id);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'course-btn';
+      b.disabled = on || chosen.length >= ROWS;
+      b.innerHTML = '<span><span class="code">' + c.code + '</span><br>' +
+                    '<span class="name">' + c.title + '</span></span>' +
+                    '<span class="cr">' + (on ? 'added' : c.credit + ' cr') + '</span>';
+      b.onclick = () => { chosen.push(c.id); drawForm(); drawList(); };
+      list.appendChild(b);
+    });
+  }
+
+  document.getElementById('handle').onclick = function () {
+    const open = drawer.classList.toggle('open');
+    this.setAttribute('aria-expanded', open);
+    // arrow flips and the label says what the next click will do
+    document.getElementById('tri').innerHTML = open ? '&#9654;' : '&#9664;';
+    this.querySelector('.label').textContent = open ? 'Hide course' : 'Add course';
+  };
+  document.getElementById('fYear').onchange = drawList;
+  document.getElementById('fSem').onchange = drawList;
+
+  const sigToggle = document.getElementById('sigToggle');
+  if (sigToggle) {
+    const img = document.getElementById('sigOnForm');
+    const flag = document.getElementById('sigFlag');
+    const pill = document.getElementById('sigPill');
+    const toggleText = document.getElementById('sigToggleText');
+    const paint = () => {
+      const on = flag.value === '1';
+      if (img) img.style.display = on ? '' : 'none';
+      toggleText.textContent = on ? 'Remove from form' : 'Add to form';
+      sigToggle.classList.toggle('on', on);
+      if (pill) {
+        pill.textContent = on ? 'on the form' : 'not added';
+        pill.classList.toggle('on', on);
+      }
+    };
+    sigToggle.onclick = () => { flag.value = flag.value === '1' ? '' : '1'; paint(); };
+    paint();
+    document.getElementById('sigChange').onclick = () => {
+      if (confirm('Replace your saved signature with a new image?')) {
+        document.getElementById('sigFile').click();
+      }
+    };
+  }
+
+  // Uploading a signature reloads the page, so carry whatever is currently on
+  // the form across with it - otherwise unsaved courses would be lost.
+  window.submitSignature = function () {
+    const sigForm = document.getElementById('sigForm');
+    sigForm.querySelectorAll('.carried').forEach(n => n.remove());
+    form.querySelectorAll('input[name=courses], #sigFlag, #etypeFlag').forEach(src => {
+      const i = document.createElement('input');
+      i.type = 'hidden'; i.name = src.name; i.value = src.value;
+      i.className = 'carried';
+      sigForm.appendChild(i);
+    });
+    sigForm.submit();
+  };
+
+  drawForm();
+  drawList();
+})();
+</script>
+</body>
+</html>

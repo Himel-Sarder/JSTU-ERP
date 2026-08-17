@@ -1,0 +1,48 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}My courses &amp; students{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">My courses &amp; students</h1>
+  <p class="page-sub">Roster for each course offer assigned to you this semester.</p></div>
+
+<div class="mb-5 flex flex-wrap items-center gap-2">
+  {% for o in offers %}
+  <a href="?offer={{ o.pk }}" class="chip px-4 py-2 {% if selected.pk == o.pk %}bg-brand-700 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">{{ o.course.course_code }}</a>
+  {% endfor %}
+  <form method="get" class="ml-auto flex items-center gap-2">
+    {% if selected %}<input type="hidden" name="offer" value="{{ selected.pk }}">{% endif %}
+    <input name="q" value="{{ query }}" class="input w-56 py-2 text-[13px]" placeholder="Search by ID or name">
+    <button class="btn-ghost px-4 py-2 text-[13px]">Search</button>
+  </form>
+</div>
+
+{% if selected %}
+<section class="card overflow-hidden">
+  <div class="card-head">
+    <div><h2 class="card-title">{{ selected.course.course_code }} &mdash; {{ selected.course.title }}</h2>
+      <p class="mt-0.5 text-[12px] text-slate-400">{{ roster|length }} enrolled &middot; {{ selected.seats_left }} seats left of {{ selected.seat_capacity }}</p></div>
+    <a href='https://rmsjstu.info/' class="card-link">Enter marks</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Student ID</th><th>Name</th><th>Level / term</th><th>Session</th><th>Contact</th><th>Result</th></tr></thead>
+      <tbody>
+        {% for e in roster %}
+        <tr>
+          <td class="font-mono font-semibold text-slate-800">{{ e.student.student_id }}</td>
+          <td>{{ e.student.user.display_name }}</td>
+          <td>L{{ e.student.level }} / T{{ e.student.semester }}</td>
+          <td>{{ e.student.session }}</td>
+          <td>{{ e.student.contact_no|default:"-" }}</td>
+          <td>{% if e.marks and e.marks.is_published %}
+              <span class="chip bg-emerald-100 text-emerald-700">{{ e.marks.grade }} &middot; {{ e.marks.total }}</span>
+              {% else %}<span class="chip bg-slate-100 text-slate-500">Not published</span>{% endif %}</td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="empty">No students match this view.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% else %}
+<div class="card empty">No course offers assigned to you yet.</div>
+{% endif %}
+{% endblock %}

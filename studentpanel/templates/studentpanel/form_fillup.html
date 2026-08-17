@@ -1,0 +1,120 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Form fill-up{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Examination form fill-up</h1>
+  <p class="page-sub">Apply for the semester final, track approval, and settle the invoice.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <div class="space-y-5 lg:col-span-2">
+    <section class="card overflow-hidden">
+      <div class="card-head">
+        <h2 class="card-title">Open form fill-up windows</h2>
+        <span class="text-[12px] text-slate-400">Year {{ student.level }} &middot; Semester {{ student.semester }}</span>
+      </div>
+      <div class="divide-y divide-slate-50">
+        {% for d in deadlines %}
+        <div class="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+          <div>
+            <p class="font-display text-[14px] font-bold text-slate-800">{{ d.exam_title }}</p>
+            <p class="mt-0.5 text-[12.5px] text-slate-500">
+              {{ d.get_level_display }} &middot; {{ d.year_label }} &middot; Semester {{ d.semester }} &middot;
+              {{ d.start_date|date:"d M" }} &ndash; {{ d.end_date|date:"d M Y" }}
+              {% if d.late_end_date %}&middot; late until {{ d.late_end_date|date:"d M" }}{% endif %}</p>
+            <p class="mt-1 text-[12.5px] font-semibold text-brand-700">Fee BDT {{ d.fee_amount }}{% if d.late_fee_amount %} (+{{ d.late_fee_amount }} late){% endif %}</p>
+            {% if d.notice %}
+            <p class="mt-2 max-w-prose whitespace-pre-line rounded-xl bg-slate-50 px-3 py-2 text-[12.5px] leading-relaxed text-slate-600">{{ d.notice }}</p>
+            {% endif %}
+            {% if d.notice_file %}
+            <a href="{{ d.notice_file.url }}" target="_blank" rel="noopener noreferrer"
+               class="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-700 hover:underline">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+              {% if d.notice_is_image %}View notice image{% else %}Download notice (PDF){% endif %}</a>
+            {% endif %}
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="chip {% if d.window_state == 'Open' %}bg-emerald-100 text-emerald-700{% elif d.window_state == 'Late window' %}bg-amber-100 text-amber-700{% else %}bg-slate-100 text-slate-500{% endif %}">{{ d.window_state }}</span>
+            <a href="{% url 'studentpanel:form_fillup_action' d.pk %}"
+               class="btn px-4 py-2 text-[12.5px]">Apply now</a>
+          </div>
+        </div>
+        {% empty %}<p class="empty">No form fill-up window is open for Year {{ student.level }}, Semester {{ student.semester }} right now.</p>{% endfor %}
+      </div>
+    </section>
+
+    <section class="card overflow-hidden">
+      <div class="card-head"><h2 class="card-title">My applications</h2></div>
+      <div class="overflow-x-auto">
+        <table class="tbl">
+          <thead><tr><th>Invoice</th><th>Examination</th><th>Amount</th><th>Payment</th><th>Approval</th><th></th></tr></thead>
+          <tbody>
+            {% for f in fillups %}
+            <tr>
+              <td class="font-mono font-semibold text-slate-800">{{ f.invoice_no }}</td>
+              <td>{{ f.deadline.exam_title }}{% if f.is_late %}<span class="ml-1 chip bg-amber-100 text-amber-700">Late</span>{% endif %}</td>
+              <td>BDT {{ f.amount }}</td>
+              <td><span class="chip {% if f.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.get_payment_status_display }}</span></td>
+              <td><span class="chip bg-{{ f.state_tone }}-100 text-{{ f.state_tone }}-700">{{ f.get_approval_status_display }}</span></td>
+              <td class="text-right">
+                {% if f.approval_status == 'PENDING' %}
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="deadline" value="{{ f.deadline.pk }}">
+                  <input type="hidden" name="action" value="cancel">
+                  <button class="text-[12.5px] font-semibold text-rose-600 hover:underline">Withdraw</button>
+                </form>
+                {% else %}<a href="{% url 'studentpanel:invoices' %}" class="text-[12.5px] font-semibold text-brand-600 hover:underline">Invoice</a>{% endif %}
+              </td>
+            </tr>
+            {% empty %}<tr><td colspan="6" class="empty">You have not applied for any examination yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="space-y-5">
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">Courses on this form</h2>
+        {% if current_form %}
+        <a href="{% url 'studentpanel:form_fillup_action' current_form.deadline.pk %}" class="card-link">Open form</a>
+        {% endif %}
+      </div>
+      {% if current_form %}
+      <p class="border-b border-slate-100 px-5 py-2.5 text-[12px] text-slate-400">
+        {{ current_form.deadline.exam_title }}</p>
+      {% endif %}
+      <ul class="divide-y divide-slate-50">
+        {% for o in form_courses %}
+        <li class="flex items-center justify-between gap-3 px-5 py-3">
+          <span><span class="font-mono text-[13px] font-semibold text-slate-800">{{ o.course.course_code }}</span>
+            <span class="block text-[12px] text-slate-400">{{ o.course.title|truncatechars:32 }}</span></span>
+          <span class="text-[12.5px] font-semibold text-slate-600">{{ o.course.credit }} cr</span>
+        </li>
+        {% empty %}
+        <li class="empty">
+          {% if current_form %}No courses added yet &mdash; open the form and use <b>Add course</b>.
+          {% else %}Apply for an examination to start a form.{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if form_courses %}
+      <div class="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-[12.5px]">
+        <span class="text-slate-500">{{ form_courses|length }} course{{ form_courses|length|pluralize }}</span>
+        <span class="font-semibold text-brand-700">{{ total_credit }} credits</span>
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="rounded-2xl border border-sky-200 bg-sky-50/70 p-5">
+      <h3 class="font-display text-[15px] font-bold text-sky-900">How approval works</h3>
+      <ol class="mt-3 space-y-2.5 text-[13px] text-sky-800">
+        <li><span class="font-bold">1.</span> You apply within the window.</li>
+        <li><span class="font-bold">2.</span> You pay the invoice; Accounts verifies it.</li>
+        <li><span class="font-bold">3.</span> The department approves the semester.</li>
+        <li><span class="font-bold">4.</span> The Registrar issues final approval.</li>
+        <li><span class="font-bold">5.</span> Your admit card is released.</li>
+      </ol>
+    </section>
+  </div>
+</div>
+{% endblock %}

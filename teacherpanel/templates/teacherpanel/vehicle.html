@@ -1,0 +1,45 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}Vehicle reservation{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Vehicle reservation</h1>
+  <p class="page-sub">Requisition a university vehicle for academic or official travel.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-5">
+  <form method="post" class="card lg:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">New requisition</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="vt">Vehicle type</label>
+        <select id="vt" name="vehicle_type" class="input">{% for v, l in vehicles %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+      <div><label class="label" for="ds">Destination</label>
+        <input id="ds" name="destination" class="input" required placeholder="e.g. Dhaka, UGC office"></div>
+      <div><label class="label" for="pp">Purpose</label>
+        <input id="pp" name="purpose" class="input" required placeholder="Reason for the journey"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="jd">Journey date</label><input id="jd" type="date" name="journey_date" class="input" required></div>
+        <div><label class="label" for="rd">Return date</label><input id="rd" type="date" name="return_date" class="input"></div>
+      </div>
+      <div><label class="label" for="ps">Passengers</label>
+        <input id="ps" name="passengers" type="number" min="1" value="1" class="input"></div>
+      <button class="btn w-full" type="submit">Submit requisition</button>
+    </div>
+  </form>
+
+  <section class="card lg:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">My requisitions</h2></div>
+    <div class="overflow-x-auto">
+      <table class="tbl">
+        <thead><tr><th>Vehicle</th><th>Destination</th><th>Journey</th><th>Passengers</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for r in requests %}
+          <tr><td class="font-semibold text-slate-800">{{ r.get_vehicle_type_display }}</td>
+            <td>{{ r.destination }}<span class="block text-[12px] text-slate-400">{{ r.purpose|truncatechars:40 }}</span></td>
+            <td>{{ r.journey_date|date:"d M Y" }}{% if r.return_date %} &ndash; {{ r.return_date|date:"d M" }}{% endif %}</td>
+            <td>{{ r.passengers }}</td>
+            <td><span class="chip {% if r.status == 'APPROVED' %}bg-emerald-100 text-emerald-700{% elif r.status == 'REJECTED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ r.get_status_display }}</span></td></tr>
+          {% empty %}<tr><td colspan="5" class="empty">No vehicle requisitions yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

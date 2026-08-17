@@ -1,0 +1,61 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Teaching feedback{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Student feedback form</h1>
+  <p class="page-sub">Rate each course you are enrolled in. Responses reach the department as aggregates only &mdash; never attributed to you.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-4">
+  <section class="card lg:col-span-1">
+    <div class="card-head"><h2 class="card-title">My courses</h2></div>
+    <ul class="divide-y divide-slate-50">
+      {% for e in enrolled %}
+      <li>
+        <a href="?enrollment={{ e.pk }}" class="flex items-center justify-between gap-2 px-5 py-3.5 transition hover:bg-slate-50 {% if selected.pk == e.pk %}bg-brand-50{% endif %}">
+          <span class="min-w-0">
+            <span class="block font-mono text-[13px] font-semibold {% if selected.pk == e.pk %}text-brand-700{% else %}text-slate-800{% endif %}">{{ e.offer.course.course_code }}</span>
+            <span class="block truncate text-[11.5px] text-slate-400">{{ e.offer.teacher.user.display_name|default:"Teacher" }}</span>
+          </span>
+          {% if e.pk in done %}<span class="chip bg-emerald-100 text-emerald-700">Done</span>{% endif %}
+        </a>
+      </li>
+      {% empty %}<li class="empty">No enrolled courses.</li>{% endfor %}
+    </ul>
+  </section>
+
+  {% if selected %}
+  <form method="post" class="card lg:col-span-3">{% csrf_token %}
+    <input type="hidden" name="enrollment" value="{{ selected.pk }}">
+    <div class="card-head">
+      <div><h2 class="card-title">{{ selected.offer.course.course_code }} &mdash; {{ selected.offer.course.title }}</h2>
+        <p class="mt-0.5 text-[12px] text-slate-400">{{ selected.offer.teacher.user.display_name|default:"Teacher to be assigned" }}</p></div>
+    </div>
+
+    <div class="divide-y divide-slate-50">
+      {% for no, text, options in questions %}
+      <div class="px-5 py-4">
+        <p class="text-[13.5px] font-medium text-slate-700"><span class="mr-2 font-display font-bold text-slate-400">{{ no }}.</span>{{ text }}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          {% for value, label, checked in options %}
+          <label class="cursor-pointer">
+            <input type="radio" name="q{{ no }}" value="{{ value }}" class="peer sr-only"{% if checked %} checked{% endif %}>
+            <span class="chip border border-slate-200 bg-white px-4 py-2 text-slate-500 transition peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white hover:border-brand-300">{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      <div class="px-5 py-4">
+        <label class="label" for="cmt">Anything else the department should know (optional)</label>
+        <textarea id="cmt" name="comment" rows="3" class="input" placeholder="Optional comment"></textarea>
+      </div>
+    </div>
+    <div class="border-t border-slate-100 px-5 py-4">
+      <button class="btn" type="submit">Submit feedback</button>
+      <span class="ml-3 text-[12.5px] text-slate-400">You can revise your answers until the semester closes.</span>
+    </div>
+  </form>
+  {% else %}
+  <div class="card empty lg:col-span-3">Enroll in a course to leave feedback.</div>
+  {% endif %}
+</div>
+{% endblock %}

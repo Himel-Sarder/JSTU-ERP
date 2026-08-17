@@ -1,0 +1,37 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Internet &amp; network{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Internet &amp; network information</h1>
+  <p class="page-sub">Your campus network account and quota for the current session.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <section class="card lg:col-span-2">
+    <div class="card-head"><h2 class="card-title">Campus network account</h2>
+      <span class="chip {% if student.internet_active %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+        {% if student.internet_active %}Active{% else %}Suspended{% endif %}</span></div>
+    <dl class="grid gap-x-6 gap-y-4 px-5 py-5 sm:grid-cols-2">
+      <div><dt class="label">Username</dt><dd class="font-mono text-[14px] font-semibold text-slate-800">{{ student.internet_username|default:student.student_id }}</dd></div>
+      <div><dt class="label">Authentication</dt><dd class="text-[14px] font-semibold text-slate-800">802.1X / captive portal</dd></div>
+      <div><dt class="label">Monthly quota</dt><dd class="text-[14px] font-semibold text-slate-800">{{ student.data_quota_gb }} GB</dd></div>
+      <div><dt class="label">Wi-Fi SSID</dt><dd class="text-[14px] font-semibold text-slate-800">JSTU-Student</dd></div>
+    </dl>
+    <div class="border-t border-slate-100 px-5 py-4">
+      <p class="text-[12.5px] text-slate-500">Reset your network password at the ICT Cell help desk, Academic Building 1, Room 104.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Quota this month</h2></div>
+    <div class="px-5 py-6">
+      <div class="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+        <div class="h-full rounded-full bg-brand-600" style="width:62%"></div>
+      </div>
+      <p class="mt-3 text-[13px] text-slate-500"><span class="font-display font-bold text-slate-800">62%</span> used &middot; resets on the 1st</p>
+      <ul class="mt-5 space-y-2 text-[12.5px] text-slate-500">
+        <li>Library and lab networks do not count against the quota.</li>
+        <li>Streaming is throttled between 09:00 and 17:00.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+{% endblock %}

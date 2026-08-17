@@ -1,0 +1,56 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}Event &amp; meeting{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Event &amp; meeting management</h1>
+  <p class="page-sub">Schedule seminars, workshops and faculty meetings on the university calendar.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-5">
+  <form method="post" class="card lg:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">Schedule an event</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="ti">Title</label><input id="ti" name="title" class="input" required></div>
+      <div><label class="label" for="kd">Type</label>
+        <select id="kd" name="kind" class="input">{% for v, l in kinds %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+      <div><label class="label" for="vn">Venue</label><input id="vn" name="venue" class="input" required placeholder="e.g. CSE Seminar Room"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="sa">Starts</label><input id="sa" type="datetime-local" name="start_at" class="input" required></div>
+        <div><label class="label" for="ea">Ends</label><input id="ea" type="datetime-local" name="end_at" class="input"></div>
+      </div>
+      <div><label class="label" for="de">Description</label><textarea id="de" name="description" rows="3" class="input"></textarea></div>
+      <button class="btn w-full" type="submit">Publish event</button>
+    </div>
+  </form>
+
+  <div class="space-y-5 lg:col-span-3">
+    <section class="card">
+      <div class="card-head"><h2 class="card-title">Events I organise</h2></div>
+      <ul class="divide-y divide-slate-50">
+        {% for e in events %}
+        <li class="flex items-center gap-4 px-5 py-4">
+          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-center font-display leading-none text-brand-700">
+            <span class="block text-[16px] font-extrabold">{{ e.start_at|date:"d" }}</span>
+            <span class="block text-[9px] font-bold uppercase">{{ e.start_at|date:"M" }}</span></span>
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-display text-[14px] font-bold text-slate-800">{{ e.title }}</p>
+            <p class="text-[12px] text-slate-400">{{ e.get_kind_display }} &middot; {{ e.venue }} &middot; {{ e.start_at|date:"h:i A" }}</p>
+          </div>
+        </li>
+        {% empty %}<li class="empty">You have not scheduled any event yet.</li>{% endfor %}
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2 class="card-title">University calendar</h2></div>
+      <ul class="divide-y divide-slate-50">
+        {% for e in upcoming %}
+        <li class="flex items-center justify-between gap-4 px-5 py-3.5">
+          <div class="min-w-0"><p class="truncate text-[13.5px] font-medium text-slate-700">{{ e.title }}</p>
+            <p class="text-[11.5px] text-slate-400">{{ e.venue }} &middot; {{ e.organizer.user.display_name|default:"University" }}</p></div>
+          <span class="shrink-0 text-[12px] font-semibold text-slate-500">{{ e.start_at|date:"d M, h:i A" }}</span>
+        </li>
+        {% empty %}<li class="empty">Nothing on the calendar.</li>{% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

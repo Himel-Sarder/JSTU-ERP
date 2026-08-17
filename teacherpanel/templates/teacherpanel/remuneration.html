@@ -1,0 +1,37 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}Exam remuneration{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Exam remuneration</h1>
+  <p class="page-sub">Bills raised for invigilation, script evaluation and examination duties.</p></div>
+
+<div class="mb-5 grid gap-4 sm:grid-cols-3">
+  <div class="stat"><span class="stat-ico bg-brand-100 text-brand-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Total billed</p><p class="font-display text-lg font-extrabold text-slate-800">BDT {{ total }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-emerald-100 text-emerald-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4.5 4.5L19 7"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Paid</p><p class="font-display text-lg font-extrabold text-slate-800">BDT {{ paid }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-amber-100 text-amber-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Bills</p><p class="font-display text-lg font-extrabold text-slate-800">{{ rows|length }}</p></div></div>
+</div>
+
+<section class="card overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Remuneration statement</h2></div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Bill date</th><th>Examination</th><th>Particulars</th><th>Amount</th><th>Status</th><th>Paid on</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr><td>{{ r.bill_date|date:"d M Y" }}</td>
+          <td class="font-semibold text-slate-800">{{ r.exam_title }}</td>
+          <td>{{ r.particulars }}</td>
+          <td class="font-semibold text-slate-800">BDT {{ r.amount }}</td>
+          <td><span class="chip {% if r.status == 'PAID' %}bg-emerald-100 text-emerald-700{% elif r.status == 'PROCESSED' %}bg-sky-100 text-sky-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ r.get_status_display }}</span></td>
+          <td>{{ r.paid_date|date:"d M Y"|default:"-" }}</td></tr>
+        {% empty %}<tr><td colspan="6" class="empty">No remuneration bills recorded.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

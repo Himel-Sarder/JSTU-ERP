@@ -1,0 +1,79 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Guardian &amp; personal info{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Guardian &amp; personal information</h1>
+  <p class="page-sub">Keep these current &mdash; the Registrar's Office uses them for all official correspondence.</p></div>
+
+<form method="post" class="grid gap-5 lg:grid-cols-2">{% csrf_token %}
+  <section class="card lg:col-span-2">
+    <div class="card-head">
+      <h2 class="card-title">Personal information</h2>
+      <span class="text-[12px] text-slate-400">As it should appear on official records</span>
+    </div>
+    <div class="space-y-4 px-5 py-5">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="nen">Student name (English)</label>
+          <input id="nen" class="input bg-slate-50" value="{{ request.user.display_name }}" disabled>
+          <p class="mt-1 text-[11.5px] text-slate-400">Set on your account &mdash; contact the ICT Cell to change it.</p></div>
+        <div><label class="label" for="nbn">Student name (Bangla)</label>
+          <input id="nbn" class="input" name="name_bn" value="{{ student.name_bn }}" lang="bn" placeholder="বাংলায় নাম"></div>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="fen">Father's name (English)</label>
+          <input id="fen" class="input" name="father_name" value="{{ student.father_name }}"></div>
+        <div><label class="label" for="fbn">Father's name (Bangla)</label>
+          <input id="fbn" class="input" name="father_name_bn" value="{{ student.father_name_bn }}" lang="bn" placeholder="পিতার নাম"></div>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="men">Mother's name (English)</label>
+          <input id="men" class="input" name="mother_name" value="{{ student.mother_name }}"></div>
+        <div><label class="label" for="mbn">Mother's name (Bangla)</label>
+          <input id="mbn" class="input" name="mother_name_bn" value="{{ student.mother_name_bn }}" lang="bn" placeholder="মাতার নাম"></div>
+      </div>
+      <div class="sm:max-w-xs">
+        <label class="label" for="rel">Religion</label>
+        <select id="rel" name="religion" class="input">
+          <option value="">Not stated</option>
+          {% for value, label in religions %}
+          <option value="{{ value }}" {% if student.religion == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Guardian details</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="gn">Guardian name</label>
+        <input id="gn" class="input" name="guardian_name" value="{{ student.guardian_name }}" placeholder="Full name"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="gr">Relation</label>
+          <input id="gr" class="input" name="guardian_relation" value="{{ student.guardian_relation }}" placeholder="Father / Mother"></div>
+        <div><label class="label" for="gc">Contact no.</label>
+          <input id="gc" class="input" name="guardian_contact" value="{{ student.guardian_contact }}" placeholder="017XXXXXXXX"></div>
+      </div>
+      <div><label class="label" for="go">Occupation</label>
+        <input id="go" class="input" name="guardian_occupation" value="{{ student.guardian_occupation }}"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Your contact details</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="cn">Contact no.</label>
+          <input id="cn" class="input" name="contact_no" value="{{ student.contact_no }}"></div>
+        <div><label class="label" for="bg">Blood group</label>
+          <input id="bg" class="input" name="blood_group" value="{{ student.blood_group }}" placeholder="B+"></div>
+      </div>
+      <div><label class="label" for="pa">Present address</label>
+        <input id="pa" class="input" name="present_address" value="{{ student.present_address }}"></div>
+      <div><label class="label" for="pma">Permanent address</label>
+        <input id="pma" class="input" name="permanent_address" value="{{ student.permanent_address }}"></div>
+    </div>
+  </section>
+
+  <div class="lg:col-span-2"><button class="btn" type="submit">Save changes</button></div>
+</form>
+{% endblock %}

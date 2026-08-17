@@ -1,0 +1,33 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Bank account{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Bank account details</h1>
+  <p class="page-sub">Scholarships and stipends are disbursed to the account recorded here.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <form method="post" class="card lg:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">Account information</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="bn">Bank name</label>
+          <input id="bn" class="input" name="bank_name" value="{{ student.bank_name }}" placeholder="Janata Bank PLC"></div>
+        <div><label class="label" for="bb">Branch</label>
+          <input id="bb" class="input" name="bank_branch" value="{{ student.bank_branch }}" placeholder="Jamalpur Branch"></div>
+      </div>
+      <div><label class="label" for="ba">Account number</label>
+        <input id="ba" class="input" name="bank_account_no" value="{{ student.bank_account_no }}" placeholder="00000000000000"></div>
+      <button class="btn" type="submit">Save account details</button>
+    </div>
+  </form>
+
+  <section class="rounded-2xl border border-sky-200 bg-sky-50/70 p-5">
+    <h3 class="font-display text-[15px] font-bold text-sky-900">Before you save</h3>
+    <ul class="mt-3 space-y-2.5 text-[13px] text-sky-800">
+      <li>The account must be in your own name, matching your student record.</li>
+      <li>Only scheduled banks operating in Bangladesh are accepted.</li>
+      <li>Changes are verified by the Accounts Office before the next disbursement cycle.</li>
+      <li>Contact accounts@jstu.edu.bd if a disbursement fails.</li>
+    </ul>
+  </section>
+</div>
+{% endblock %}

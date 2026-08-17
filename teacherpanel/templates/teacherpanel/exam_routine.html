@@ -1,0 +1,29 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}Exam routine{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Exam routine</h1>
+  <p class="page-sub">Examination dates, times, venues and memo numbers for your courses.</p></div>
+
+<section class="card overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Published examinations</h2></div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Date</th><th>Time</th><th>Course</th><th>Type</th><th>Place</th><th>Memo no.</th><th>State</th></tr></thead>
+      <tbody>
+        {% for r in routines %}
+        <tr>
+          <td class="font-semibold text-slate-800">{{ r.exam_date|date:"d M Y" }}</td>
+          <td>{{ r.start_time|time:"h:i A" }} &middot; {{ r.duration_minutes }} min</td>
+          <td><span class="font-mono font-semibold text-slate-800">{{ r.offer.course.course_code }}</span>
+            <span class="block text-[12px] text-slate-400">{{ r.offer.course.title }}</span></td>
+          <td>{{ r.get_exam_type_display }}</td>
+          <td>{{ r.exam_place }}</td>
+          <td class="font-mono text-[12.5px]">{{ r.memo_no|default:"-" }}</td>
+          <td><span class="chip {% if r.is_published %}bg-emerald-100 text-emerald-700{% else %}bg-amber-100 text-amber-700{% endif %}">{% if r.is_published %}Published{% else %}Draft{% endif %}</span></td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="empty">No examination routine entered for your courses yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}My publications{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">My publications</h1>
+  <p class="page-sub">Journal articles, conference papers and books recorded against your faculty profile.</p></div>
+
+<div class="mb-5 grid gap-4 sm:grid-cols-3">
+  <div class="stat"><span class="stat-ico bg-brand-100 text-brand-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Total records</p><p class="font-display text-lg font-extrabold text-slate-800">{{ publications|length }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-emerald-100 text-emerald-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Journal articles</p><p class="font-display text-lg font-extrabold text-slate-800">{{ journal_count }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-violet-100 text-violet-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.5"/><path d="M3 20c0-3 2.7-4.8 6-4.8s6 1.8 6 4.8"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Conference papers</p><p class="font-display text-lg font-extrabold text-slate-800">{{ conference_count }}</p></div></div>
+</div>
+
+<div class="grid gap-5 lg:grid-cols-5">
+  <form method="post" class="card lg:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">Add a publication</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="ti">Title</label><input id="ti" name="title" class="input" required></div>
+      <div><label class="label" for="au">Authors</label><input id="au" name="authors" class="input" placeholder="Comma separated"></div>
+      <div><label class="label" for="jn">Journal / venue</label><input id="jn" name="journal_name" class="input"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="kd">Type</label>
+          <select id="kd" name="kind" class="input">{% for v, l in kinds %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="label" for="yr">Year</label><input id="yr" name="year" type="number" min="1990" max="2100" value="{% now 'Y' %}" class="input"></div>
+      </div>
+      <div><label class="label" for="ix">Indexing</label><input id="ix" name="indexing" class="input" placeholder="Scopus, SCIE, ESCI"></div>
+      <div><label class="label" for="do">DOI link</label><input id="do" name="doi_link" type="url" class="input" placeholder="https://doi.org/..."></div>
+      <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <input type="checkbox" name="in_baures" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+        <span class="text-[13px] font-medium text-slate-700">List in the BAURES research repository</span></label>
+      <button class="btn w-full" type="submit">Save publication</button>
+    </div>
+  </form>
+
+  <section class="card lg:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Publication record</h2></div>
+    <ul class="divide-y divide-slate-50">
+      {% for p in publications %}
+      <li class="px-5 py-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h3 class="font-display text-[14px] font-bold leading-snug text-slate-900">{{ p.title }}</h3>
+            <p class="mt-1 text-[12.5px] text-slate-500">{{ p.authors|default:request.user.display_name }}</p>
+            <p class="mt-0.5 text-[12px] italic text-slate-400">{{ p.journal_name|default:"-" }}, {{ p.year }}</p>
+          </div>
+          <div class="flex shrink-0 flex-col items-end gap-1.5">
+            <span class="chip bg-slate-100 text-slate-600">{{ p.get_kind_display }}</span>
+            {% if p.indexing %}<span class="chip bg-emerald-100 text-emerald-700">{{ p.indexing }}</span>{% endif %}
+            {% if p.in_baures %}<span class="chip bg-brand-50 text-brand-700">BAURES</span>{% endif %}
+          </div>
+        </div>
+        {% if p.doi_link %}<a href="{{ p.doi_link }}" target="_blank" rel="noopener" class="mt-2 inline-block text-[12.5px] font-semibold text-brand-600 hover:underline">{{ p.doi_link|truncatechars:52 }}</a>{% endif %}
+      </li>
+      {% empty %}<li class="empty">No publications recorded yet.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

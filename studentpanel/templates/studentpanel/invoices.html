@@ -1,0 +1,67 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Payment invoice{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Payment invoice</h1>
+  <p class="page-sub">Examination and semester fees, payable through the Janata Bank gateway or mobile financial services.</p></div>
+
+<div class="mb-5 grid gap-4 sm:grid-cols-3">
+  <div class="stat"><span class="stat-ico bg-rose-100 text-rose-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16v.01"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Outstanding</p><p class="font-display text-lg font-extrabold text-slate-800">BDT {{ outstanding }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-emerald-100 text-emerald-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4.5 4.5L19 7"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Payments made</p><p class="font-display text-lg font-extrabold text-slate-800">{{ payments|length }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-sky-100 text-sky-700">
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Invoices issued</p><p class="font-display text-lg font-extrabold text-slate-800">{{ fillups|length }}</p></div></div>
+</div>
+
+<section class="card mb-5 overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Invoices</h2></div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Invoice</th><th>Examination</th><th>Amount</th><th>Status</th><th>Pay with</th></tr></thead>
+      <tbody>
+        {% for f in fillups %}
+        <tr>
+          <td class="font-mono font-semibold text-slate-800">{{ f.invoice_no }}</td>
+          <td>{{ f.deadline.exam_title }}</td>
+          <td class="font-semibold text-slate-800">BDT {{ f.amount }}</td>
+          <td><span class="chip {% if f.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.get_payment_status_display }}</span></td>
+          <td>
+            {% if f.payment_status == 'UNPAID' %}
+            <form method="post" class="flex items-center gap-2">{% csrf_token %}
+              <input type="hidden" name="fillup" value="{{ f.pk }}">
+              <select name="method" class="input w-40 py-1.5 text-[12.5px]">
+                {% for v, l in methods %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+              </select>
+              <button class="btn px-4 py-1.5 text-[12.5px]">Pay now</button>
+            </form>
+            {% else %}<span class="text-[12.5px] text-slate-400">Settled</span>{% endif %}
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="empty">No invoice has been generated for you yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Payment history</h2></div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Date</th><th>Invoice</th><th>Method</th><th>Transaction</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr><td>{{ p.payment_date|date:"d M Y, h:i A" }}</td>
+          <td class="font-mono">{{ p.invoice_no }}</td>
+          <td>{{ p.get_method_display }}</td>
+          <td class="font-mono text-[12.5px]">{{ p.transaction_id }}</td>
+          <td class="font-semibold text-slate-800">BDT {{ p.amount }}</td>
+          <td><span class="chip {% if p.status == 'VERIFIED' %}bg-emerald-100 text-emerald-700{% elif p.status == 'FAILED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ p.get_status_display }}</span></td></tr>
+        {% empty %}<tr><td colspan="6" class="empty">No payments recorded.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

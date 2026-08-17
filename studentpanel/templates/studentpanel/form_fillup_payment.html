@@ -1,0 +1,44 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}Payment{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Examination fee payment</h1>
+  <p class="page-sub">Your form has been submitted. Settle the fee to complete the fill-up.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-3">
+  <section class="card lg:col-span-2">
+    <div class="card-head"><h2 class="card-title">Payment</h2></div>
+    <div class="px-5 py-16 text-center">
+      <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-700">
+        <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      </span>
+      <p class="mt-4 font-display text-[18px] font-extrabold text-slate-800">Coming soon</p>
+      <p class="mx-auto mt-1 max-w-sm text-[13.5px] leading-relaxed text-slate-500">
+        Online payment is not wired up yet. Your application is saved and the invoice
+        is listed below &mdash; pay at the bank counter for now.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Invoice</h2></div>
+    <dl class="space-y-4 px-5 py-5">
+      <div><dt class="label">Examination</dt>
+        <dd class="text-[14px] font-semibold text-slate-800">{{ fillup.deadline.exam_title }}</dd></div>
+      <div><dt class="label">Invoice no.</dt>
+        <dd class="font-mono text-[14px] font-semibold text-slate-800">{{ fillup.invoice_no }}</dd></div>
+      <div><dt class="label">Amount</dt>
+        <dd class="text-[14px] font-bold text-brand-700">BDT {{ fillup.amount|floatformat:0 }}
+          {% if fillup.is_late %}<span class="chip ml-1 bg-amber-100 text-amber-700">Late</span>{% endif %}</dd></div>
+      <div><dt class="label">Courses listed</dt>
+        <dd class="text-[14px] font-semibold text-slate-800">{{ fillup.courses.count }}</dd></div>
+      <div><dt class="label">Payment status</dt>
+        <dd><span class="chip bg-slate-100 text-slate-600">{{ fillup.get_payment_status_display }}</span></dd></div>
+      <div><dt class="label">Approval</dt>
+        <dd><span class="chip bg-{{ fillup.state_tone }}-100 text-{{ fillup.state_tone }}-700">{{ fillup.get_approval_status_display }}</span></dd></div>
+    </dl>
+    <div class="flex gap-2 border-t border-slate-100 px-5 py-4">
+      <a href="{% url 'studentpanel:form_fillup_action' fillup.deadline.pk %}" class="btn-ghost">View form</a>
+      <a href="{% url 'studentpanel:form_fillup' %}" class="btn">Back to fill-up</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

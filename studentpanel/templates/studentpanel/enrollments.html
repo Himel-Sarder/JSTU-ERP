@@ -1,0 +1,86 @@
+{% extends "studentpanel/base.html" %}
+{% block title %}My enrollments{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">My enrollments</h1>
+  <p class="page-sub">Courses offered for Level {{ student.level }}, Semester {{ student.semester }} in your department.</p></div>
+
+{% if deadline %}
+<div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">
+  <div><p class="font-display text-[14px] font-bold text-brand-900">{{ deadline.exam_title }}</p>
+    <p class="text-[12.5px] text-brand-700">Enrollment window {{ deadline.start_date|date:"d M" }} &ndash; {{ deadline.end_date|date:"d M Y" }}</p></div>
+  <span class="chip bg-brand-700 text-white">{{ deadline.window_state }}</span>
+</div>
+{% endif %}
+
+<div class="grid gap-5 lg:grid-cols-2">
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Enrolled courses</h2></div>
+    <div class="overflow-x-auto">
+      <table class="tbl">
+        <thead><tr><th>Course</th><th>Teacher</th><th>Credit</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for e in mine %}
+          <tr>
+            <td><span class="font-mono font-semibold text-slate-800">{{ e.offer.course.course_code }}</span>
+              <span class="block text-[12px] text-slate-400">{{ e.offer.course.title }}</span></td>
+            <td>{{ e.offer.teacher.user.display_name|default:"-" }}</td>
+            <td>{{ e.offer.course.credit }}</td>
+            <td><span class="chip {% if e.status == 'ENROLLED' %}bg-emerald-100 text-emerald-700{% elif e.status == 'CANCELLED' %}bg-rose-100 text-rose-700{% else %}bg-slate-100 text-slate-600{% endif %}">{{ e.get_status_display }}</span></td>
+            <td class="text-right">
+              {% if e.status == 'ENROLLED' %}
+              <form method="post">{% csrf_token %}
+                <input type="hidden" name="offer" value="{{ e.offer.pk }}">
+                <input type="hidden" name="action" value="cancel">
+                <button class="text-[12.5px] font-semibold text-rose-600 hover:underline">Cancel</button>
+              </form>{% endif %}
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="5" class="empty">Nothing enrolled yet. Pick a course from the offer list.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Available course offers</h2></div>
+    <div class="overflow-x-auto">
+      <table class="tbl">
+        <thead><tr><th>Course</th><th>Category</th><th>Seats</th><th></th></tr></thead>
+        <tbody>
+          {% for o in available %}
+          <tr>
+            <td><span class="font-mono font-semibold text-slate-800">{{ o.course.course_code }}</span>
+              <span class="block text-[12px] text-slate-400">{{ o.course.title }}</span></td>
+            <td>{{ o.course.get_category_display }}</td>
+            <td><span class="font-semibold {% if o.seats_left %}text-slate-700{% else %}text-rose-600{% endif %}">{{ o.seats_left }}</span>
+              <span class="text-slate-400">/ {{ o.seat_capacity }}</span></td>
+            <td class="text-right">
+              <form method="post">{% csrf_token %}
+                <input type="hidden" name="offer" value="{{ o.pk }}">
+                <button class="btn-ghost px-3 py-1.5 text-[12.5px]" {% if not o.seats_left %}disabled{% endif %}>Enroll</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="4" class="empty">No further offers for your level and semester.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="card mt-5 overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Class routine</h2></div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Day</th><th>Time</th><th>Course</th><th>Room</th></tr></thead>
+      <tbody>
+        {% for c in routine %}
+        <tr><td class="font-semibold text-slate-800">{{ c.get_day_display }}</td>
+          <td>{{ c.start_time|time:"h:i A" }} &ndash; {{ c.end_time|time:"h:i A" }}</td>
+          <td class="font-mono">{{ c.offer.course.course_code }}</td><td>{{ c.room }}</td></tr>
+        {% empty %}<tr><td colspan="4" class="empty">The class routine has not been published yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

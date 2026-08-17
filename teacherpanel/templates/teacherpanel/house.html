@@ -1,0 +1,40 @@
+{% extends "teacherpanel/base.html" %}
+{% block title %}House allotment{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">House allotment</h1>
+  <p class="page-sub">Request a residential quarter on campus. Allotment follows the seniority and category policy.</p></div>
+
+<div class="grid gap-5 lg:grid-cols-5">
+  <form method="post" class="card lg:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">New request</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="hc">House category</label>
+        <select id="hc" name="house_category" class="input">{% for v, l in categories %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+      <div><label class="label" for="pq">Preferred quarter</label>
+        <input id="pq" name="preferred_quarter" class="input" placeholder="e.g. Block B, Flat 3A"></div>
+      <div><label class="label" for="fm">Family members</label>
+        <input id="fm" name="family_members" type="number" min="1" value="1" class="input"></div>
+      <div><label class="label" for="rn">Reason</label>
+        <textarea id="rn" name="reason" rows="4" class="input" placeholder="Why you are requesting an allotment"></textarea></div>
+      <button class="btn w-full" type="submit">Submit request</button>
+    </div>
+  </form>
+
+  <section class="card lg:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">My requests</h2></div>
+    <div class="overflow-x-auto">
+      <table class="tbl">
+        <thead><tr><th>Category</th><th>Preferred quarter</th><th>Members</th><th>Applied</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for r in requests %}
+          <tr><td class="font-semibold text-slate-800">{{ r.get_house_category_display }}</td>
+            <td>{{ r.preferred_quarter|default:"-" }}</td><td>{{ r.family_members }}</td>
+            <td>{{ r.applied_at|date:"d M Y" }}</td>
+            <td><span class="chip {% if r.status == 'APPROVED' %}bg-emerald-100 text-emerald-700{% elif r.status == 'REJECTED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ r.get_status_display }}</span></td></tr>
+          {% empty %}<tr><td colspan="5" class="empty">No house allotment requests yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
