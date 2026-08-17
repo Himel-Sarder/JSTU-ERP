@@ -1,0 +1,54 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Exam schedule{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Exam schedule</h1>
+  <p class="page-sub">Declare exam date, place, start time and memo number, then publish to the panels.</p></div>
+
+<div class="grid gap-5 xl:grid-cols-5">
+  <form method="post" class="card xl:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">Schedule an examination</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="of">Course offer</label>
+        <select id="of" name="offer" class="input" required>
+          {% for o in offers %}<option value="{{ o.pk }}">{{ o.course.course_code }} &middot; {{ o.get_level_display }} &middot; {{ o.year_label }}, Sem {{ o.semester }}</option>{% endfor %}
+        </select></div>
+      <div><label class="label" for="et">Examination title</label><input id="et" name="exam_title" class="input" value="Semester Final"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="ty">Type</label>
+          <select id="ty" name="exam_type" class="input">{% for v, l in types %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="label" for="dm">Duration (min)</label><input id="dm" name="duration_minutes" type="number" value="180" class="input"></div>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="ed">Exam date</label><input id="ed" type="date" name="exam_date" class="input" required></div>
+        <div><label class="label" for="st">Start time</label><input id="st" type="time" name="start_time" class="input" required></div>
+      </div>
+      <div><label class="label" for="ep">Exam place</label><input id="ep" name="exam_place" class="input" required placeholder="Exam Hall 2, Academic Building 1"></div>
+      <div><label class="label" for="mn">Memo number</label><input id="mn" name="memo_no" class="input" placeholder="JSTU/EXAM/2026/031"></div>
+      <button class="btn-gold w-full" type="submit">Schedule examination</button>
+    </div>
+  </form>
+
+  <section class="card xl:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Examination routine</h2></div>
+    <div class="max-h-[640px] overflow-auto">
+      <table class="tbl">
+        <thead class="sticky top-0"><tr><th>Date</th><th>Time</th><th>Course</th><th>Place</th><th>Memo</th><th>Publish</th></tr></thead>
+        <tbody>
+          {% for r in rows %}
+          <tr><td class="font-semibold text-slate-800">{{ r.exam_date|date:"d M Y" }}</td>
+            <td>{{ r.start_time|time:"h:i A" }}</td>
+            <td class="font-mono">{{ r.offer.course.course_code }}<span class="block text-[11.5px] text-slate-400">{{ r.get_exam_type_display }}</span></td>
+            <td>{{ r.exam_place }}</td>
+            <td class="font-mono text-[12px]">{{ r.memo_no|default:"-" }}</td>
+            <td><form method="post">{% csrf_token %}
+              <input type="hidden" name="routine" value="{{ r.pk }}"><input type="hidden" name="action" value="publish">
+              <button class="chip {% if r.is_published %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">{% if r.is_published %}Published{% else %}Draft{% endif %}</button>
+            </form></td>
+          </tr>
+          {% empty %}<tr><td colspan="6" class="empty">No examination scheduled.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

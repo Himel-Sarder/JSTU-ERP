@@ -1,0 +1,47 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Admit card management{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Admit card management</h1>
+  <p class="page-sub">Bulk-generate admit cards for finally approved students, then release them to the Student Panel.</p></div>
+
+<div class="grid gap-5 xl:grid-cols-5">
+  <section class="card xl:col-span-2">
+    <div class="card-head"><h2 class="card-title">Bulk generation</h2></div>
+    <div class="divide-y divide-slate-50">
+      {% for d in deadlines %}
+      <div class="px-5 py-4">
+        <p class="font-display text-[14px] font-bold text-slate-800">{{ d.exam_title }}</p>
+        <p class="mt-0.5 text-[12.5px] text-slate-500">{{ d.get_level_display }} &middot; {{ d.year_label }} &middot; Semester {{ d.semester }} &middot; {{ d.calendar_year }}</p>
+        <div class="mt-3 flex gap-2">
+          <form method="post">{% csrf_token %}
+            <input type="hidden" name="deadline" value="{{ d.pk }}"><input type="hidden" name="action" value="generate">
+            <button class="btn px-4 py-2 text-[12.5px]">Generate</button></form>
+          <form method="post">{% csrf_token %}
+            <input type="hidden" name="deadline" value="{{ d.pk }}"><input type="hidden" name="action" value="release">
+            <button class="btn-gold px-4 py-2 text-[12.5px]">Release to students</button></form>
+        </div>
+      </div>
+      {% empty %}<p class="empty">Declare an enrollment deadline first.</p>{% endfor %}
+    </div>
+  </section>
+
+  <section class="card xl:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Generated admit cards</h2>
+      <span class="chip bg-emerald-100 text-emerald-700">{{ released }} released</span></div>
+    <div class="max-h-[560px] overflow-auto">
+      <table class="tbl">
+        <thead class="sticky top-0"><tr><th>Serial</th><th>Student</th><th>Examination</th><th>Issued</th><th>State</th></tr></thead>
+        <tbody>
+          {% for c in cards %}
+          <tr><td class="font-mono font-semibold text-slate-800">{{ c.serial_no }}</td>
+            <td>{{ c.student.user.display_name }}<span class="block font-mono text-[11.5px] text-slate-400">{{ c.student.student_id }}</span></td>
+            <td>{{ c.deadline.exam_title }}</td>
+            <td>{{ c.issue_date|date:"d M Y" }}</td>
+            <td><span class="chip {% if c.is_released %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">{% if c.is_released %}Released{% else %}Withheld{% endif %}</span></td></tr>
+          {% empty %}<tr><td colspan="5" class="empty">No admit cards generated yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

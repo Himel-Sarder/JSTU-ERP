@@ -1,0 +1,46 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Notice management{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Notice management</h1>
+  <p class="page-sub">Publish to the public website and the student, teacher and admin panels.</p></div>
+
+<div class="grid gap-5 xl:grid-cols-5">
+  <form method="post" class="card xl:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">Publish a notice</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="ti">Title</label><input id="ti" name="title" class="input" required></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="ca">Category</label>
+          <select id="ca" name="category" class="input">{% for v, l in categories %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="label" for="au">Audience</label>
+          <select id="au" name="audience" class="input">{% for v, l in audiences %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+      </div>
+      <div><label class="label" for="bo">Body</label><textarea id="bo" name="body" rows="6" class="input"></textarea></div>
+      <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <input type="checkbox" name="is_pinned" class="h-4 w-4 rounded border-slate-300 text-gold-500 focus:ring-gold-400">
+        <span class="text-[13px] font-medium text-slate-700">Pin to the top of every notice board</span></label>
+      <button class="btn-gold w-full" type="submit">Publish notice</button>
+    </div>
+  </form>
+
+  <section class="card xl:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Published notices</h2></div>
+    <div class="max-h-[640px] overflow-auto">
+      <table class="tbl">
+        <thead class="sticky top-0"><tr><th>Title</th><th>Category</th><th>Audience</th><th>Date</th><th>State</th></tr></thead>
+        <tbody>
+          {% for n in rows %}
+          <tr><td class="font-semibold text-slate-800">{% if n.is_pinned %}<span class="mr-1 chip bg-rose-100 text-rose-700">Pin</span>{% endif %}{{ n.title|truncatechars:44 }}</td>
+            <td>{{ n.get_category_display }}</td><td>{{ n.get_audience_display }}</td>
+            <td>{{ n.post_date|date:"d M Y" }}</td>
+            <td><form method="post">{% csrf_token %}
+              <input type="hidden" name="notice" value="{{ n.pk }}"><input type="hidden" name="action" value="toggle">
+              <button class="chip {% if n.is_published %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">{% if n.is_published %}Live{% else %}Hidden{% endif %}</button>
+            </form></td></tr>
+          {% empty %}<tr><td colspan="5" class="empty">No notices published.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Dashboard &amp; reports{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Dashboard &amp; reports</h1>
+  <p class="page-sub">Institution-wide figures for the Vice-Chancellor and academic leadership.</p></div>
+
+<div class="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="stat"><span class="stat-ico bg-emerald-100 text-emerald-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4.5 4.5L19 7"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Fees collected</p><p class="font-display text-lg font-extrabold text-slate-900">BDT {{ collected }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-sky-100 text-sky-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Total billed</p><p class="font-display text-lg font-extrabold text-slate-900">BDT {{ billed }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-rose-100 text-rose-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Outstanding</p><p class="font-display text-lg font-extrabold text-slate-900">BDT {{ outstanding }}</p></div></div>
+  <div class="stat"><span class="stat-ico bg-violet-100 text-violet-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/></svg></span>
+    <div><p class="text-[12px] text-slate-500">Publications</p><p class="font-display text-lg font-extrabold text-slate-900">{{ publications }}</p></div></div>
+</div>
+
+<div class="grid gap-5 xl:grid-cols-2">
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Department summary</h2></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Department</th><th>Faculty</th><th>Students</th><th>Teachers</th><th>Courses</th></tr></thead>
+      <tbody>
+        {% for r in dept_rows %}
+        <tr><td class="font-semibold text-slate-800">{{ r.dept.code }}</td><td>{{ r.dept.faculty_name }}</td>
+          <td>{{ r.students }}</td><td>{{ r.teachers }}</td><td>{{ r.courses }}</td></tr>
+        {% empty %}<tr><td colspan="5" class="empty">No departments recorded.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Grade distribution</h2>
+      <span class="text-[12px] text-slate-400">Published results only</span></div>
+    <div class="space-y-3 p-5">
+      {% for g in grade_rows %}
+      <div>
+        <div class="mb-1 flex items-center justify-between text-[12.5px]">
+          <span class="font-semibold text-slate-700">{{ g.grade|default:"-" }}</span>
+          <span class="text-slate-400">{{ g.n }}</span></div>
+        <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div class="h-full rounded-full {% if g.grade == 'F' %}bg-rose-500{% else %}bg-gold-500{% endif %}" style="width:{% widthratio g.n grade_rows.0.n 100 %}%"></div></div>
+      </div>
+      {% empty %}<p class="empty">No results published yet.</p>{% endfor %}
+    </div>
+  </section>
+
+  <section class="card xl:col-span-2 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Teaching feedback (course-wise average)</h2>
+      <span class="text-[12px] text-slate-400">Scale 0 (Never) to 3 (Always)</span></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Teacher</th><th>Course</th><th>Responses</th><th>Average</th></tr></thead>
+      <tbody>
+        {% for f in feedback %}
+        <tr><td class="font-semibold text-slate-800">{{ f.enrollment__offer__teacher__user__first_name }} {{ f.enrollment__offer__teacher__user__last_name }}</td>
+          <td class="font-mono">{{ f.enrollment__offer__course__course_code }}</td>
+          <td>{{ f.n }}</td>
+          <td><span class="chip {% if f.score >= 2.5 %}bg-emerald-100 text-emerald-700{% elif f.score >= 1.5 %}bg-amber-100 text-amber-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.score|floatformat:2 }}</span></td></tr>
+        {% empty %}<tr><td colspan="4" class="empty">No feedback submitted yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Enrollment deadline{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Declare enrollment deadline</h1>
+  <p class="page-sub">One window per examination and semester, with an optional late fill-up period.</p></div>
+
+<div class="grid gap-5 xl:grid-cols-12">
+  <form method="post" enctype="multipart/form-data" class="card xl:col-span-4" id="window-form">{% csrf_token %}
+    <div class="card-head">
+      <h2 class="card-title">{% if editing %}Edit window{% else %}New window{% endif %}</h2>
+      {% if editing %}<a href="{% url 'adminpanel:deadline' %}" class="card-link">Cancel</a>{% endif %}
+    </div>
+    <div class="space-y-4 px-5 py-5">
+      {% if editing %}
+      <input type="hidden" name="action" value="update">
+      <input type="hidden" name="deadline" value="{{ editing.pk }}">
+      {% endif %}
+      <div><label class="label" for="et">Examination title</label>
+        <input id="et" name="exam_title" class="input" required placeholder="Semester Final, Spring 2026" value="{{ editing.exam_title|default:'' }}"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="lv">Level</label>
+          <select id="lv" name="level" class="input">{% for v, l in levels %}<option value="{{ v }}" {% if editing.level == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div><label class="label" for="yr">Year</label>
+          <select id="yr" name="year" class="input">{% for v, l in years %}<option value="{{ v }}" {% if editing.year == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="sm">Semester</label><input id="sm" name="semester" type="number" min="1" max="3" value="{{ editing.semester|default:1 }}" class="input"></div>
+        <div><label class="label" for="cy">Calendar year</label><input id="cy" name="calendar_year" type="number" value="{{ editing.calendar_year|default:calendar_year }}" class="input"></div>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="sd">Opens</label><input id="sd" type="date" name="start_date" class="input" required value="{{ editing.start_date|date:'Y-m-d' }}"></div>
+        <div><label class="label" for="ed">Closes</label><input id="ed" type="date" name="end_date" class="input" required value="{{ editing.end_date|date:'Y-m-d' }}"></div>
+      </div>
+      <div><label class="label" for="ld">Late fill-up until</label><input id="ld" type="date" name="late_end_date" class="input" value="{{ editing.late_end_date|date:'Y-m-d' }}"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="fa">Fee (BDT)</label><input id="fa" name="fee_amount" type="number" value="{{ editing.fee_amount|default:3500 }}" class="input"></div>
+        <div><label class="label" for="lf">Late fee (BDT)</label><input id="lf" name="late_fee_amount" type="number" value="{{ editing.late_fee_amount|default:500 }}" class="input"></div>
+      </div>
+      <div>
+        <label class="label" for="nt">Notice <span class="font-normal normal-case tracking-normal text-slate-400">(optional)</span></label>
+        <textarea id="nt" name="notice" rows="3" class="input"
+                  placeholder="Anything students should read before applying — memo number, instructions, exceptions.">{{ editing.notice|default:'' }}</textarea>
+      </div>
+      <div>
+        <label class="label" for="nf">Attachment <span class="font-normal normal-case tracking-normal text-slate-400">(optional &middot; PDF or image)</span></label>
+        <input id="nf" name="notice_file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp"
+               class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-[13px] text-slate-600 outline-none transition file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-[12.5px] file:font-semibold file:text-slate-700 hover:file:bg-slate-200 focus:border-gold-500 focus:ring-4 focus:ring-gold-100">
+        {% if editing.notice_file %}
+        <p class="mt-2 flex flex-wrap items-center gap-2 text-[12.5px] text-slate-500">
+          <span>Current:</span>
+          <a href="{{ editing.notice_file.url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-gold-600 hover:underline">{{ editing.notice_filename }}</a>
+          <label class="inline-flex items-center gap-1.5 text-slate-500">
+            <input type="checkbox" name="remove_file" value="1" class="rounded border-slate-300"> remove
+          </label>
+        </p>
+        <p class="mt-1 text-[11.5px] text-slate-400">Choosing a new file replaces it.</p>
+        {% endif %}
+      </div>
+      <button class="btn-gold w-full" type="submit">{% if editing %}Save changes{% else %}Declare deadline{% endif %}</button>
+    </div>
+  </form>
+
+  <section class="card xl:col-span-8 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Declared windows</h2></div>
+    <div class="overflow-x-auto">
+      {# seven columns, so tighten the default px-5 cell padding to fit them all #}
+      <table class="tbl [&_td]:px-3 [&_th]:px-3">
+        <thead><tr><th>Examination</th><th class="whitespace-nowrap">Level &middot; Year / Sem</th><th class="whitespace-nowrap">Window</th><th class="whitespace-nowrap">Fee</th><th class="whitespace-nowrap text-right">State &amp; actions</th></tr></thead>
+        <tbody>
+          {% for d in deadlines %}
+          <tr>
+            <td class="font-semibold text-slate-800">{{ d.exam_title }}
+              {# attachments as icons: text opens in a floating box, files open in a new tab #}
+              <div class="mt-1 flex items-center gap-1.5">
+                {% if d.notice %}
+                <button type="button" onclick="showNotice(this)"
+                        data-notice-title="{{ d.exam_title }}" data-notice="{{ d.notice }}"
+                        title="Read the notice" aria-label="Read the notice"
+                        class="grid h-6 w-6 place-items-center rounded-md bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M8 13h7M8 17h5"/></svg>
+                </button>
+                {% endif %}
+                {% if d.notice_file %}
+                <a href="{{ d.notice_file.url }}" target="_blank" rel="noopener noreferrer"
+                   title="{{ d.notice_filename }}"
+                   aria-label="Open attachment {{ d.notice_filename }}"
+                   class="grid h-6 w-6 place-items-center rounded-md transition
+                          {% if d.notice_is_image %}bg-sky-50 text-sky-600 hover:bg-sky-100{% else %}bg-rose-50 text-rose-600 hover:bg-rose-100{% endif %}">
+                  {% if d.notice_is_image %}
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 5-5 4 4 3-2 4 4"/></svg>
+                  {% else %}
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M8.5 17v-4h1.2a1.2 1.2 0 0 1 0 2.4H8.5"/><path d="M13 17v-4h1a1.6 1.6 0 0 1 0 4Z"/></svg>
+                  {% endif %}
+                </a>
+                {% endif %}
+                {% if not d.notice and not d.notice_file %}
+                <span class="text-[11.5px] font-normal text-slate-300">No notice</span>
+                {% endif %}
+              </div></td>
+            <td class="whitespace-nowrap">
+              <span class="chip bg-slate-100 text-slate-600">{{ d.get_level_display }}</span>
+              <span class="mt-1 block">{{ d.year_label }} &middot; Sem {{ d.semester }}</span>
+              <span class="block text-[11.5px] text-slate-400">{{ d.calendar_year }}</span></td>
+            <td class="whitespace-nowrap">{{ d.start_date|date:"d M" }} &ndash; {{ d.end_date|date:"d M Y" }}
+              {% if d.late_end_date %}<span class="block text-[11.5px] text-amber-600">late to {{ d.late_end_date|date:"d M" }}</span>{% endif %}</td>
+            <td class="whitespace-nowrap">{{ d.fee_amount|floatformat:0 }}</td>
+            <td>
+              <div class="flex justify-end">
+                <span class="chip {% if d.window_state == 'Open' %}bg-emerald-100 text-emerald-700{% elif d.window_state == 'Late window' %}bg-amber-100 text-amber-700{% else %}bg-slate-100 text-slate-500{% endif %}">{{ d.window_state }}</span>
+              </div>
+              {# icon actions - three text links made the column too wide to fit #}
+              <div class="mt-1.5 flex items-center justify-end gap-1 whitespace-nowrap">
+                <a href="?edit={{ d.pk }}#window-form" title="Edit this window" aria-label="Edit"
+                   class="grid h-7 w-7 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></a>
+                <form method="post" class="inline">{% csrf_token %}
+                  <input type="hidden" name="deadline" value="{{ d.pk }}"><input type="hidden" name="action" value="toggle">
+                  <button title="{% if d.is_open %}Close this window{% else %}Reopen this window{% endif %}"
+                          aria-label="{% if d.is_open %}Close{% else %}Reopen{% endif %}"
+                          class="grid h-7 w-7 place-items-center rounded-lg text-gold-600 transition hover:bg-gold-100">
+                    {% if d.is_open %}
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                    {% else %}
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>
+                    {% endif %}
+                  </button>
+                </form>
+                <form method="post" class="inline"
+                      onsubmit="return confirm('Delete &quot;{{ d.exam_title|escapejs }}&quot;?{% if d.admit_cards.exists %}\n\nIts admit cards will be deleted too.{% endif %}\n\nThis cannot be undone.');">{% csrf_token %}
+                  <input type="hidden" name="deadline" value="{{ d.pk }}"><input type="hidden" name="action" value="delete">
+                  <button title="Delete this window" aria-label="Delete"
+                          class="grid h-7 w-7 place-items-center rounded-lg text-rose-600 transition hover:bg-rose-50">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><path d="M9 7V4h6v3"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="5" class="empty">No enrollment deadline declared.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+{# floating box for a window's notice text #}
+<div id="noticeBox" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 p-4"
+     onclick="if (event.target === this) hideNotice()">
+  <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="noticeBoxTitle">
+    <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notice</p>
+        <h3 id="noticeBoxTitle" class="font-display text-[15px] font-bold text-slate-800"></h3>
+      </div>
+      <button type="button" onclick="hideNotice()" aria-label="Close"
+              class="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p id="noticeBoxBody" class="max-h-[60vh] overflow-auto whitespace-pre-wrap px-5 py-4 text-[13.5px] leading-relaxed text-slate-600"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function showNotice(btn) {
+    document.getElementById('noticeBoxTitle').textContent = btn.dataset.noticeTitle;
+    // textContent, not innerHTML - the notice is user-entered text, and
+    // whitespace-pre-wrap keeps its line breaks.
+    document.getElementById('noticeBoxBody').textContent = btn.dataset.notice;
+    const box = document.getElementById('noticeBox');
+    box.classList.remove('hidden');
+    box.classList.add('flex');
+  }
+  function hideNotice() {
+    const box = document.getElementById('noticeBox');
+    box.classList.add('hidden');
+    box.classList.remove('flex');
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideNotice(); });
+</script>
+{% endblock %}

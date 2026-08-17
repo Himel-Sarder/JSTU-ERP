@@ -1,0 +1,44 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Approval &amp; finalization{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Approval &amp; finalization</h1>
+  <p class="page-sub">Select applications and move the whole batch in one action. {{ finalized }} already finalized.</p></div>
+
+<form method="post" class="card overflow-hidden">{% csrf_token %}
+  <div class="card-head"><h2 class="card-title">Approval queue ({{ queue|length }})</h2>
+    <label class="flex cursor-pointer items-center gap-2 text-[12.5px] font-semibold text-slate-500">
+      <input type="checkbox" id="all" class="h-4 w-4 rounded border-slate-300 text-gold-500 focus:ring-gold-400"> Select all</label></div>
+  <div class="max-h-[560px] overflow-auto">
+    <table class="tbl">
+      <thead class="sticky top-0"><tr><th class="w-10"></th><th>Invoice</th><th>Student</th><th>Examination</th><th>Payment</th><th>Current state</th></tr></thead>
+      <tbody>
+        {% for f in queue %}
+        <tr>
+          <td><input type="checkbox" name="selected" value="{{ f.pk }}" class="row h-4 w-4 rounded border-slate-300 text-gold-500 focus:ring-gold-400"></td>
+          <td class="font-mono font-semibold text-slate-800">{{ f.invoice_no }}</td>
+          <td>{{ f.student.user.display_name }}<span class="block font-mono text-[11.5px] text-slate-400">{{ f.student.student_id }}</span></td>
+          <td>{{ f.deadline.exam_title }}</td>
+          <td><span class="chip {% if f.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.get_payment_status_display }}</span></td>
+          <td><span class="chip bg-{{ f.state_tone }}-100 text-{{ f.state_tone }}-700">{{ f.get_approval_status_display }}</span></td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="empty">The approval queue is empty.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if queue %}
+  <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-4">
+    <button class="btn-ghost" name="action" value="ACCOUNTS">Send to Accounts</button>
+    <button class="btn-ghost" name="action" value="APPROVED">Approve semester</button>
+    <button class="btn-gold" name="action" value="FINAL">Grant final approval</button>
+    <button class="btn-ghost" name="action" value="HELD">Hold</button>
+    <button class="btn-ghost" name="action" value="REJECTED">Reject</button>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  const all = document.getElementById('all');
+  if (all) all.onchange = () => document.querySelectorAll('.row').forEach(c => c.checked = all.checked);
+</script>
+{% endblock %}

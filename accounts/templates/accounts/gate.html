@@ -1,0 +1,172 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure entry &middot; JSTU ERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        gate: { 50:'#eff8ff', 100:'#daeeff', 300:'#7cc8fb', 500:'#2f9bf5', 600:'#1d84e0', 700:'#1a6bb8' },
+      },
+      boxShadow: { card: '0 24px 60px -20px rgba(15,60,110,.28)' },
+    },
+  },
+};
+</script>
+<style type="text/tailwindcss">
+  .digit {
+    @apply h-16 w-12 sm:h-[70px] sm:w-14 rounded-2xl border-2 border-slate-200 bg-white
+           text-center font-display text-3xl font-bold text-slate-800 outline-none
+           transition-all duration-150 caret-transparent;
+  }
+  .digit:focus { @apply border-gate-500 ring-4 ring-gate-100 scale-105; }
+  .digit.filled { @apply border-gate-300 text-slate-900; }
+</style>
+</head>
+
+<body class="h-full bg-gate-50 font-body antialiased">
+<div class="min-h-full flex flex-col items-center justify-center px-4 py-10">
+
+  <!-- university strip -->
+  <div class="mb-6 flex items-center gap-3 text-center">
+    <img src="{{ jstu.LOGO_URL }}" alt="{{ jstu.SHORT_NAME }} logo"
+         class="h-11 w-11 rounded-xl bg-white object-contain p-1 shadow-lg">
+    <div class="text-left">
+      <p class="font-display text-[15px] font-bold leading-tight text-slate-800">Jamalpur Science and Technology University</p>
+      <p class="text-xs font-medium text-slate-500">Enterprise Resource Planning System</p>
+    </div>
+  </div>
+
+  <!-- passkey card -->
+  <div class="w-full max-w-[430px] rounded-[28px] bg-white p-8 shadow-card sm:p-10">
+
+    <div class="mx-auto grid h-[70px] w-[70px] place-items-center rounded-full bg-gate-100">
+      <svg class="h-8 w-8 text-gate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/><path d="M12 16.4V18"/>
+      </svg>
+    </div>
+
+    <h1 class="mt-5 text-center font-display text-[34px] font-extrabold leading-none tracking-tight text-slate-900">Easy peasy</h1>
+    <p class="mt-3 text-center text-[13px] leading-relaxed text-slate-400">
+      Enter your university e-mail and the 6-digit passkey issued by the ICT Cell.
+    </p>
+
+    {% if error %}
+    <div class="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-[13px] font-medium text-rose-700">
+      <svg class="mt-px h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    {% if messages %}{% for m in messages %}
+    <div class="mt-5 flex items-start gap-2 rounded-xl border px-3.5 py-3 text-[13px] font-medium
+                {% if m.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-700
+                {% elif m.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-800
+                {% else %}border-emerald-200 bg-emerald-50 text-emerald-800{% endif %}">
+      <svg class="mt-px h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+      <span>{{ m }}</span>
+    </div>
+    {% endfor %}{% endif %}
+
+    <form method="post" action="{% url 'accounts:gate_verify' %}" id="gateForm" class="mt-6 space-y-5" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div>
+        <label for="email" class="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">University e-mail</label>
+        <div class="relative">
+          <svg class="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+          <input id="email" name="email" type="email" value="{{ email|default:'' }}" autocomplete="username"
+                 placeholder="name@jstu.edu.bd" required
+                 class="w-full rounded-2xl border-2 border-slate-200 bg-white py-3.5 pl-11 pr-4 text-[15px] font-medium text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-300 focus:border-gate-500 focus:ring-4 focus:ring-gate-100">
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Two-factor passkey</label>
+        <div class="flex justify-center gap-2 sm:gap-2.5" id="digitRow">
+          {% for i in digits %}
+          <input class="digit" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                 name="d{{ forloop.counter0 }}" data-index="{{ forloop.counter0 }}"
+                 aria-label="Passkey digit {{ forloop.counter }}" autocomplete="one-time-code">
+          {% endfor %}
+        </div>
+      </div>
+
+      <button id="submitBtn" type="submit" disabled
+              class="w-full rounded-2xl bg-slate-100 py-4 font-display text-[15px] font-bold text-slate-400 transition-all duration-200 disabled:cursor-not-allowed">
+        6 digits left
+      </button>
+    </form>
+
+    <div class="mt-6 flex items-center justify-center gap-2 border-t border-slate-100 pt-5 text-[12px] text-slate-400">
+      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6.5v5c0 4.5 3.2 8.4 8 9.5 4.8-1.1 8-5 8-9.5v-5L12 3Z"/></svg>
+      Encrypted session &middot; every entry is written to the audit trail
+    </div>
+  </div>
+
+  <p class="mt-6 text-center text-[12px] text-slate-400">
+    Lost your passkey? Contact the <span class="font-semibold text-slate-500">ICT Cell, JSTU</span> &mdash; ict@jstu.edu.bd
+  </p>
+</div>
+
+<script>
+(function () {
+  const inputs = Array.from(document.querySelectorAll('.digit'));
+  const btn = document.getElementById('submitBtn');
+  const email = document.getElementById('email');
+
+  const filledCount = () => inputs.filter(i => i.value.length === 1).length;
+
+  function paint() {
+    const left = 6 - filledCount();
+    inputs.forEach(i => i.classList.toggle('filled', i.value.length === 1));
+    const ready = left === 0 && email.value.trim().length > 0;
+    btn.disabled = !ready;
+    if (ready) {
+      btn.textContent = 'Verify and continue';
+      btn.className = 'w-full rounded-2xl bg-gate-500 py-4 font-display text-[15px] font-bold text-white shadow-lg shadow-gate-500/30 transition-all duration-200 hover:bg-gate-600 active:scale-[.99]';
+    } else {
+      btn.textContent = left === 0 ? 'Enter your e-mail' : left + (left === 1 ? ' digit left' : ' digits left');
+      btn.className = 'w-full rounded-2xl bg-slate-100 py-4 font-display text-[15px] font-bold text-slate-400 transition-all duration-200 disabled:cursor-not-allowed';
+    }
+  }
+
+  inputs.forEach((input, idx) => {
+    input.addEventListener('input', e => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 1);
+      if (e.target.value && idx < inputs.length - 1) inputs[idx + 1].focus();
+      paint();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !input.value && idx > 0) { inputs[idx - 1].focus(); inputs[idx - 1].value = ''; paint(); }
+      if (e.key === 'ArrowLeft' && idx > 0) inputs[idx - 1].focus();
+      if (e.key === 'ArrowRight' && idx < inputs.length - 1) inputs[idx + 1].focus();
+    });
+    input.addEventListener('paste', e => {
+      e.preventDefault();
+      const code = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      code.split('').forEach((ch, k) => { if (inputs[k]) inputs[k].value = ch; });
+      (inputs[Math.min(code.length, 5)] || inputs[5]).focus();
+      paint();
+    });
+  });
+
+  email.addEventListener('input', paint);
+  (email.value ? inputs[0] : email).focus();
+  paint();
+})();
+</script>
+</body>
+</html>

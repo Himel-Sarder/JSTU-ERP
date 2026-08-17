@@ -1,0 +1,160 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="page-title">Welcome, {{ request.user.display_name }} <span class="ml-1">&#128075;</span></h1>
+    <p class="page-sub">{{ request.user.role_label }} dashboard</p></div>
+  <div class="flex items-center gap-4 text-[13px] text-slate-500">
+    <span class="flex items-center gap-1.5">
+      <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+      {% now "l, j F Y" %}</span>
+    <span class="flex items-center gap-1.5">
+      <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      {% now "h:i A" %}</span>
+  </div>
+</div>
+
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+  <a href="{% url 'adminpanel:student_status' %}" class="stat transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="stat-ico bg-sky-100 text-sky-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M2.5 20c0-3.4 2.9-5.2 6.5-5.2s6.5 1.8 6.5 5.2"/></svg></span>
+    <div><p class="font-display text-xl font-extrabold text-slate-900">{{ total_students }}</p>
+      <p class="text-[12px] text-slate-500">Total students</p><p class="text-[11px] font-semibold text-gold-600">View details</p></div></a>
+  <a href="{% url 'adminpanel:add_course' %}" class="stat transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="stat-ico bg-emerald-100 text-emerald-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/></svg></span>
+    <div><p class="font-display text-xl font-extrabold text-slate-900">{{ total_courses }}</p>
+      <p class="text-[12px] text-slate-500">Total courses</p><p class="text-[11px] font-semibold text-gold-600">View details</p></div></a>
+  <a href="{% url 'adminpanel:course_offer' %}" class="stat transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="stat-ico bg-amber-100 text-amber-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
+    <div><p class="font-display text-xl font-extrabold text-slate-900">{{ total_offers }}</p>
+      <p class="text-[12px] text-slate-500">Course offers</p><p class="text-[11px] font-semibold text-gold-600">View details</p></div></a>
+  <a href="{% url 'adminpanel:fillup' %}" class="stat transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="stat-ico bg-violet-100 text-violet-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg></span>
+    <div><p class="font-display text-xl font-extrabold text-slate-900">{{ active_fillups }}</p>
+      <p class="text-[12px] text-slate-500">Active form fill-ups</p><p class="text-[11px] font-semibold text-gold-600">View details</p></div></a>
+  <a href="{% url 'adminpanel:approvals' %}" class="stat transition hover:-translate-y-0.5 hover:shadow-md">
+    <span class="stat-ico bg-rose-100 text-rose-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/></svg></span>
+    <div><p class="font-display text-xl font-extrabold text-slate-900">{{ pending_approvals }}</p>
+      <p class="text-[12px] text-slate-500">Pending approvals</p><p class="text-[11px] font-semibold text-gold-600">View details</p></div></a>
+</div>
+
+<div class="mt-5 grid gap-5 xl:grid-cols-3">
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Form fill-up overview</h2>
+      <a href="{% url 'adminpanel:fillup' %}" class="card-link">View all</a></div>
+    <ul class="divide-y divide-slate-50">
+      <li class="flex items-center gap-3 px-5 py-3.5"><svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/></svg>
+        <span class="flex-1 text-[13.5px] text-slate-600">Active form fill-ups</span><span class="chip bg-emerald-100 text-emerald-700">{{ fillup_active }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="flex-1 text-[13.5px] text-slate-600">Pending semester</span><span class="chip bg-amber-100 text-amber-700">{{ fillup_pending }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/></svg>
+        <span class="flex-1 text-[13.5px] text-slate-600">Accounts seen pending</span><span class="chip bg-sky-100 text-sky-700">{{ fillup_accounts }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+        <span class="flex-1 text-[13.5px] text-slate-600">Approved semester</span><span class="chip bg-emerald-100 text-emerald-700">{{ fillup_approved }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6.5v5c0 4.5 3.2 8.4 8 9.5 4.8-1.1 8-5 8-9.5v-5L12 3Z"/></svg>
+        <span class="flex-1 text-[13.5px] text-slate-600">Final approval pending</span><span class="chip bg-violet-100 text-violet-700">{{ fillup_final_pending }}</span></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Recent notices</h2>
+      <a href="{% url 'adminpanel:notices' %}" class="card-link">View all</a></div>
+    <ul class="divide-y divide-slate-50">
+      {% for n in notices %}
+      <li class="flex items-start gap-3 px-5 py-3.5">
+        <svg class="mt-0.5 h-4 w-4 shrink-0 text-gold-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1Z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>
+        <div class="min-w-0 flex-1"><p class="truncate text-[13.5px] font-medium text-slate-700">{{ n.title }}</p>
+          <p class="mt-0.5 text-[11.5px] text-slate-400">{{ n.get_audience_display }} &middot; {{ n.post_date|date:"d M Y" }}</p></div>
+      </li>
+      {% empty %}<li class="empty">No notices published yet.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Pending approvals</h2>
+      <a href="{% url 'adminpanel:requests' %}" class="card-link">View all</a></div>
+    <ul class="divide-y divide-slate-50">
+      <li class="flex items-center gap-3 px-5 py-3.5"><span class="flex-1 text-[13.5px] text-slate-600">Late form fill-up requests</span>
+        <span class="chip bg-rose-100 text-rose-700">{{ late_requests }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><span class="flex-1 text-[13.5px] text-slate-600">Leave applications</span>
+        <span class="chip bg-amber-100 text-amber-700">{{ leave_requests }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><span class="flex-1 text-[13.5px] text-slate-600">House allotment requests</span>
+        <span class="chip bg-sky-100 text-sky-700">{{ house_requests }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><span class="flex-1 text-[13.5px] text-slate-600">Vehicle requisitions</span>
+        <span class="chip bg-violet-100 text-violet-700">{{ vehicle_requests }}</span></li>
+      <li class="flex items-center gap-3 px-5 py-3.5"><span class="flex-1 text-[13.5px] text-slate-600">Open complaints</span>
+        <span class="chip bg-emerald-100 text-emerald-700">{{ complaint_count }}</span></li>
+    </ul>
+  </section>
+</div>
+
+<div class="mt-5 grid gap-5 xl:grid-cols-4">
+  <section class="card xl:col-span-3">
+    <div class="card-head"><h2 class="card-title">Quick access modules</h2></div>
+    <div class="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
+      <a href="{% url 'adminpanel:add_course' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-sky-100 text-sky-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Add course</span>
+        <span class="block text-[11.5px] text-slate-400">Create new course</span></a>
+      <a href="{% url 'adminpanel:course_offer' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-100 text-emerald-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-5 9 5-9 5Z"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Manage course offer</span>
+        <span class="block text-[11.5px] text-slate-400">Assign to semester</span></a>
+      <a href="{% url 'adminpanel:deadline' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-amber-100 text-amber-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Declare deadline</span>
+        <span class="block text-[11.5px] text-slate-400">Per exam / semester</span></a>
+      <a href="{% url 'adminpanel:routine' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-violet-100 text-violet-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M9 4v17"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Routine management</span>
+        <span class="block text-[11.5px] text-slate-400">Class &amp; exam routines</span></a>
+      <a href="{% url 'adminpanel:exam_schedule' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-teal-100 text-teal-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Exam schedule</span>
+        <span class="block text-[11.5px] text-slate-400">Date, time, place, memo</span></a>
+      <a href="{% url 'adminpanel:fillup' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-rose-100 text-rose-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Form fill-up approval</span>
+        <span class="block text-[11.5px] text-slate-400">Hold / late approval</span></a>
+      <a href="{% url 'adminpanel:admit_cards' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Admit card bulk print</span>
+        <span class="block text-[11.5px] text-slate-400">Generate &amp; release</span></a>
+      <a href="{% url 'adminpanel:reports' %}" class="rounded-xl border border-slate-200 p-3.5 transition hover:border-gold-400 hover:bg-gold-50/40">
+        <span class="grid h-9 w-9 place-items-center rounded-lg bg-slate-200 text-slate-700"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+        <span class="mt-2.5 block font-display text-[13px] font-bold text-slate-800">Dashboard &amp; reports</span>
+        <span class="block text-[11.5px] text-slate-400">Institution analytics</span></a>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">System shortcuts</h2></div>
+    <div class="divide-y divide-slate-50">
+      <a href="{% url 'adminpanel:users' %}" class="flex items-center gap-3 px-5 py-3.5 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">User management
+        <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="{% url 'adminpanel:users' %}" class="flex items-center gap-3 px-5 py-3.5 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">Role &amp; passkey management
+        <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="{% url 'adminpanel:audit' %}" class="flex items-center gap-3 px-5 py-3.5 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">Audit trail
+        <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="/admin/" class="flex items-center gap-3 px-5 py-3.5 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">Django admin panel
+        <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="{% url 'adminpanel:website' %}" class="flex items-center gap-3 px-5 py-3.5 text-[13.5px] font-medium text-slate-700 hover:bg-slate-50">Website control panel
+        <svg class="ml-auto h-4 w-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></a>
+    </div>
+  </section>
+</div>
+
+<h2 class="mb-3 mt-7 font-display text-lg font-bold text-slate-800">Institution overview</h2>
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+  <div class="card flex items-center gap-3 p-5"><span class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-sky-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></span>
+    <span><span class="block font-display text-[17px] font-extrabold text-slate-900">{{ faculties }}</span><span class="block text-[12px] text-slate-500">Faculties</span></span></div>
+  <div class="card flex items-center gap-3 p-5"><span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+    <span><span class="block font-display text-[17px] font-extrabold text-slate-900">{{ departments }}</span><span class="block text-[12px] text-slate-500">Departments</span></span></div>
+  <div class="card flex items-center gap-3 p-5"><span class="grid h-11 w-11 place-items-center rounded-xl bg-violet-100 text-violet-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
+    <span><span class="block font-display text-[17px] font-extrabold text-slate-900">{{ teachers }}</span><span class="block text-[12px] text-slate-500">Teachers</span></span></div>
+  <div class="card flex items-center gap-3 p-5"><span class="grid h-11 w-11 place-items-center rounded-xl bg-amber-100 text-amber-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M2.5 20c0-3.4 2.9-5.2 6.5-5.2s6.5 1.8 6.5 5.2"/></svg></span>
+    <span><span class="block font-display text-[17px] font-extrabold text-slate-900">{{ staff }}</span><span class="block text-[12px] text-slate-500">Admin staff</span></span></div>
+  <div class="card flex items-center gap-3 p-5"><span class="grid h-11 w-11 place-items-center rounded-xl bg-rose-100 text-rose-700"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-5 9 5-9 5Z"/><path d="M7 11.5V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-4.5"/></svg></span>
+    <span><span class="block font-display text-[17px] font-extrabold text-slate-900">{{ total_students }}</span><span class="block text-[12px] text-slate-500">Active students</span></span></div>
+</div>
+{% endblock %}

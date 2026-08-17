@@ -1,0 +1,48 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}User &amp; role management{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">User &amp; role management</h1>
+  <p class="page-sub">Issue, unlock and disable the 6-digit entry passkeys that open the ERP.</p></div>
+
+<div class="mb-5 flex flex-wrap gap-2">
+  <a href="{% url 'adminpanel:users' %}" class="chip px-4 py-2 {% if not role %}bg-ink-800 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">All accounts</a>
+  {% for v, l, n in roles %}
+  <a href="?role={{ v }}" class="chip px-4 py-2 {% if role == v %}bg-ink-800 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">{{ l }} ({{ n }})</a>
+  {% endfor %}
+</div>
+
+<div class="mb-5 rounded-2xl border border-amber-200 bg-amber-50/70 px-5 py-4 text-[13px] text-amber-800">
+  A newly issued passkey is shown once, in the confirmation message at the top of this page. Pass it to the account holder through an approved channel &mdash; it is never e-mailed automatically.
+</div>
+
+<section class="card overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Accounts</h2><span class="text-[12px] text-slate-400">{{ rows|length }} shown</span></div>
+  <div class="max-h-[640px] overflow-auto">
+    <table class="tbl">
+      <thead class="sticky top-0"><tr><th>Name</th><th>E-mail</th><th>Role</th><th>Passkey</th><th>State</th><th>Last used</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for u in rows %}
+        <tr>
+          <td class="font-semibold text-slate-800">{{ u.display_name }}</td>
+          <td class="text-[12.5px]">{{ u.email }}</td>
+          <td><span class="chip bg-slate-100 text-slate-600">{{ u.role_label }}</span></td>
+          <td class="font-mono font-semibold text-slate-800">{% if u.passkey %}{{ u.passkey.code }}{% else %}<span class="font-body text-[12.5px] font-normal text-rose-600">not issued</span>{% endif %}</td>
+          <td>{% if u.passkey %}
+              <span class="chip {% if u.passkey.status_label == 'Active' %}bg-emerald-100 text-emerald-700{% elif u.passkey.status_label == 'Locked' %}bg-amber-100 text-amber-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ u.passkey.status_label }}</span>
+              {% else %}<span class="chip bg-slate-100 text-slate-500">None</span>{% endif %}</td>
+          <td class="text-[12.5px] text-slate-400">{% if u.passkey.last_used_at %}{{ u.passkey.last_used_at|date:"d M, h:i A" }}{% else %}never{% endif %}</td>
+          <td>
+            <form method="post" class="flex flex-wrap gap-1.5">{% csrf_token %}
+              <input type="hidden" name="user" value="{{ u.pk }}">
+              <button name="action" value="issue" class="chip bg-ink-800 px-3 py-1.5 text-white">Issue</button>
+              <button name="action" value="unlock" class="chip bg-slate-200 px-3 py-1.5 text-slate-600">Unlock</button>
+              <button name="action" value="disable" class="chip bg-rose-100 px-3 py-1.5 text-rose-700">Disable</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="empty">No accounts match this filter.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Form fill-up management{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Form fill-up management</h1>
+  <p class="page-sub">Hold, release and approve applications as they move through the workflow.</p></div>
+
+<div class="mb-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
+  <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-slate-900">{{ counts.active }}</p><p class="text-[11.5px] text-slate-500">Active</p></div>
+  <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-amber-600">{{ counts.pending }}</p><p class="text-[11.5px] text-slate-500">Pending semester</p></div>
+  <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-sky-600">{{ counts.accounts }}</p><p class="text-[11.5px] text-slate-500">Accounts seen</p></div>
+  <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-emerald-600">{{ counts.approved }}</p><p class="text-[11.5px] text-slate-500">Approved</p></div>
+  <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-violet-600">{{ counts.final }}</p><p class="text-[11.5px] text-slate-500">Final approval</p></div>
+  <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-rose-600">{{ counts.held }}</p><p class="text-[11.5px] text-slate-500">Held</p></div>
+</div>
+
+<div class="mb-5 flex flex-wrap gap-2">
+  <a href="{% url 'adminpanel:fillup' %}" class="chip px-4 py-2 {% if not state %}bg-ink-800 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">All</a>
+  {% for v, l in states %}
+  <a href="?state={{ v }}" class="chip px-4 py-2 {% if state == v %}bg-ink-800 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">{{ l }}</a>
+  {% endfor %}
+</div>
+
+<section class="card overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Applications</h2><span class="text-[12px] text-slate-400">{{ rows|length }} record(s)</span></div>
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th>Invoice</th><th>Student</th><th>Examination</th><th>Amount</th><th>Payment</th><th>Approval</th><th>Move to</th></tr></thead>
+      <tbody>
+        {% for f in rows %}
+        <tr>
+          <td class="font-mono font-semibold text-slate-800">{{ f.invoice_no }}{% if f.is_late %}<span class="ml-1 chip bg-amber-100 text-amber-700">Late</span>{% endif %}</td>
+          <td>{{ f.student.user.display_name }}<span class="block font-mono text-[11.5px] text-slate-400">{{ f.student.student_id }}</span></td>
+          <td>{{ f.deadline.exam_title }}</td>
+          <td>BDT {{ f.amount }}</td>
+          <td><span class="chip {% if f.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.get_payment_status_display }}</span></td>
+          <td><span class="chip bg-{{ f.state_tone }}-100 text-{{ f.state_tone }}-700">{{ f.get_approval_status_display }}</span></td>
+          <td>
+            <form method="post" class="flex items-center gap-2">{% csrf_token %}
+              <input type="hidden" name="fillup" value="{{ f.pk }}">
+              <select name="action" class="input w-44 py-1.5 text-[12.5px]">
+                {% for v, l in states %}<option value="{{ v }}" {% if f.approval_status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+              </select>
+              <button class="btn px-3 py-1.5 text-[12.5px]">Apply</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="empty">No applications in this state.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

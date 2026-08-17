@@ -1,0 +1,63 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Staff requests{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Staff requests</h1>
+  <p class="page-sub">Leave, house allotment and vehicle requisitions raised by faculty.</p></div>
+
+<div class="space-y-5">
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Leave applications</h2></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Applicant</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th><th>Status</th><th>Decision</th></tr></thead>
+      <tbody>
+        {% for r in leaves %}
+        <tr><td class="font-semibold text-slate-800">{{ r.teacher.user.display_name }}<span class="block text-[11.5px] text-slate-400">{{ r.teacher.employee_id }}</span></td>
+          <td>{{ r.get_leave_type_display }}</td>
+          <td>{{ r.from_date|date:"d M" }} &ndash; {{ r.to_date|date:"d M Y" }}</td>
+          <td>{{ r.days }}</td>
+          <td class="max-w-[220px] truncate text-[12.5px]">{{ r.reason }}</td>
+          <td><span class="chip {% if r.status == 'APPROVED' %}bg-emerald-100 text-emerald-700{% elif r.status == 'REJECTED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ r.get_status_display }}</span></td>
+          <td><form method="post" class="flex gap-1.5">{% csrf_token %}
+            <input type="hidden" name="kind" value="leave"><input type="hidden" name="row" value="{{ r.pk }}">
+            <button name="status" value="APPROVED" class="chip bg-emerald-600 px-3 py-1.5 text-white">Approve</button>
+            <button name="status" value="REJECTED" class="chip bg-slate-200 px-3 py-1.5 text-slate-600">Reject</button></form></td></tr>
+        {% empty %}<tr><td colspan="7" class="empty">No leave applications.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">House allotment requests</h2></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Applicant</th><th>Category</th><th>Preferred quarter</th><th>Members</th><th>Status</th><th>Decision</th></tr></thead>
+      <tbody>
+        {% for r in houses %}
+        <tr><td class="font-semibold text-slate-800">{{ r.teacher.user.display_name }}</td>
+          <td>{{ r.get_house_category_display }}</td><td>{{ r.preferred_quarter|default:"-" }}</td><td>{{ r.family_members }}</td>
+          <td><span class="chip {% if r.status == 'APPROVED' %}bg-emerald-100 text-emerald-700{% elif r.status == 'REJECTED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ r.get_status_display }}</span></td>
+          <td><form method="post" class="flex gap-1.5">{% csrf_token %}
+            <input type="hidden" name="kind" value="house"><input type="hidden" name="row" value="{{ r.pk }}">
+            <button name="status" value="APPROVED" class="chip bg-emerald-600 px-3 py-1.5 text-white">Approve</button>
+            <button name="status" value="REJECTED" class="chip bg-slate-200 px-3 py-1.5 text-slate-600">Reject</button></form></td></tr>
+        {% empty %}<tr><td colspan="6" class="empty">No house allotment requests.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+
+  <section class="card overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Vehicle requisitions</h2></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Applicant</th><th>Vehicle</th><th>Destination</th><th>Journey</th><th>Passengers</th><th>Status</th><th>Decision</th></tr></thead>
+      <tbody>
+        {% for r in vehicles %}
+        <tr><td class="font-semibold text-slate-800">{{ r.teacher.user.display_name }}</td>
+          <td>{{ r.get_vehicle_type_display }}</td><td>{{ r.destination }}</td>
+          <td>{{ r.journey_date|date:"d M Y" }}</td><td>{{ r.passengers }}</td>
+          <td><span class="chip {% if r.status == 'APPROVED' %}bg-emerald-100 text-emerald-700{% elif r.status == 'REJECTED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ r.get_status_display }}</span></td>
+          <td><form method="post" class="flex gap-1.5">{% csrf_token %}
+            <input type="hidden" name="kind" value="vehicle"><input type="hidden" name="row" value="{{ r.pk }}">
+            <button name="status" value="APPROVED" class="chip bg-emerald-600 px-3 py-1.5 text-white">Approve</button>
+            <button name="status" value="REJECTED" class="chip bg-slate-200 px-3 py-1.5 text-slate-600">Reject</button></form></td></tr>
+        {% empty %}<tr><td colspan="7" class="empty">No vehicle requisitions.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+</div>
+{% endblock %}

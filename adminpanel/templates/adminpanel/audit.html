@@ -1,0 +1,32 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Audit trail{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Audit trail</h1>
+  <p class="page-sub">Every gate attempt, approval and publication, newest first.</p></div>
+
+<div class="mb-5 flex flex-wrap gap-2">
+  <a href="{% url 'adminpanel:audit' %}" class="chip px-4 py-2 {% if not action %}bg-ink-800 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">All events</a>
+  {% for v, l in actions %}
+  <a href="?action={{ v }}" class="chip px-4 py-2 {% if action == v %}bg-ink-800 text-white{% else %}bg-white text-slate-500 ring-1 ring-slate-200{% endif %}">{{ l }}</a>
+  {% endfor %}
+</div>
+
+<section class="card overflow-hidden">
+  <div class="card-head"><h2 class="card-title">Recent events</h2><span class="text-[12px] text-slate-400">Last {{ rows|length }}</span></div>
+  <div class="max-h-[680px] overflow-auto">
+    <table class="tbl">
+      <thead class="sticky top-0"><tr><th>When</th><th>Who</th><th>Action</th><th>Entity</th><th>Detail</th><th>IP</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr><td class="whitespace-nowrap">{{ r.created_at|date:"d M Y, h:i:s A" }}</td>
+          <td>{{ r.user.email|default:"anonymous" }}</td>
+          <td><span class="chip {% if r.action == 'GATE_FAIL' or r.action == 'REJECT' %}bg-rose-100 text-rose-700{% elif r.action == 'GATE_PASS' or r.action == 'APPROVE' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-600{% endif %}">{{ r.get_action_display }}</span></td>
+          <td class="font-mono text-[12.5px]">{{ r.entity|default:"-" }}</td>
+          <td class="max-w-[280px] truncate text-[12.5px]">{{ r.detail|default:"-" }}</td>
+          <td class="font-mono text-[12px] text-slate-400">{{ r.ip_address|default:"-" }}</td></tr>
+        {% empty %}<tr><td colspan="6" class="empty">No audit events recorded.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
