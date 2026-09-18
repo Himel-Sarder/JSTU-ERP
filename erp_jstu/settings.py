@@ -23,7 +23,7 @@ DEBUG = os.environ.get("JSTU_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "https://erpjstu.203.96.189.222.sslip.io/",
+    "erpjstu.203.96.189.222.sslip.io",
 ]
 
 INSTALLED_APPS = [
