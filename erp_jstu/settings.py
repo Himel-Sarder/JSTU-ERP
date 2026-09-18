@@ -21,9 +21,9 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get("JSTU_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get("JSTU_ALLOWED_HOSTS", "*").split(",")
-    if host.strip()
+    "localhost",
+    "127.0.0.1",
+    "https://erpjstu.203.96.189.222.sslip.io/",
 ]
 
 INSTALLED_APPS = [
