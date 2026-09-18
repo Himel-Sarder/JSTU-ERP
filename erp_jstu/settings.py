@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #   JSTU_SECRET_KEY, JSTU_DEBUG=0, JSTU_ALLOWED_HOSTS="erp.jstu.edu.bd,www.jstu.edu.bd"
 SECRET_KEY = os.environ.get(
     "JSTU_SECRET_KEY",
-    "django-insecure-jstu-erp-change-this-key-before-production-deploy",
+    "django-insecure-7m@p#4!x9L2$vQ8^nK5&zR1*eT6_wY3",
 )
 DEBUG = os.environ.get("JSTU_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [
