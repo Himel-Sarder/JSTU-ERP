@@ -1,79 +1,232 @@
 {% extends "studentpanel/base.html" %}
 {% block title %}Guardian &amp; personal info{% endblock %}
 {% block content %}
-<div class="mb-6"><h1 class="page-title">Guardian &amp; personal information</h1>
-  <p class="page-sub">Keep these current &mdash; the Registrar's Office uses them for all official correspondence.</p></div>
+{% with pct=student.profile_completeness exam=student.missing_form_details %}
+
+<!-- ── Page header ───────────────────────────────────────────── -->
+<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="page-title">Guardian &amp; personal information</h1>
+    <p class="page-sub">Keep these current &mdash; the Registrar's Office uses them for all official correspondence.</p>
+  </div>
+  <a href="{% url 'studentpanel:profile' %}" class="btn-ghost">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+    Back to profile</a>
+</div>
+
+<!-- ── Completeness strip ────────────────────────────────────── -->
+<section class="card mb-5 flex flex-wrap items-center gap-x-8 gap-y-4 px-5 py-4">
+  <div class="min-w-[200px] flex-1">
+    <div class="flex items-baseline justify-between gap-3">
+      <span class="text-[12px] font-semibold text-slate-600">Record completeness</span>
+      <span class="font-display text-[15px] font-extrabold text-slate-800">{{ pct }}%</span>
+    </div>
+    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+      <div class="h-full rounded-full transition-all {% if pct < 50 %}bg-amber-500{% else %}bg-brand-500{% endif %}"
+           style="width:{{ pct }}%"></div>
+    </div>
+  </div>
+  {% if exam %}
+  <p class="flex items-start gap-2 text-[12.5px] font-medium leading-relaxed text-amber-700">
+    <svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+    <span>Still needed for your examination form:
+      <span class="font-bold">{% for item in exam %}{{ item }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>.</span>
+  </p>
+  {% else %}
+  <p class="flex items-center gap-2 text-[12.5px] font-medium text-emerald-700">
+    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+    Everything an examination form needs is on record.
+  </p>
+  {% endif %}
+</section>
 
 <form method="post" class="grid gap-5 lg:grid-cols-2">{% csrf_token %}
+
+  <!-- ── Personal information ────────────────────────────────── -->
   <section class="card lg:col-span-2">
     <div class="card-head">
-      <h2 class="card-title">Personal information</h2>
-      <span class="text-[12px] text-slate-400">As it should appear on official records</span>
+      <h2 class="card-title flex items-center gap-2">
+        <span class="grid h-7 w-7 place-items-center rounded-lg bg-sky-50 text-sky-700">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
+        Personal information</h2>
+      <span class="hidden text-[11.5px] font-medium text-slate-400 sm:block">As it should appear on official records</span>
     </div>
     <div class="space-y-4 px-5 py-5">
       <div class="grid gap-4 sm:grid-cols-2">
-        <div><label class="label" for="nen">Student name (English)</label>
-          <input id="nen" class="input bg-slate-50" value="{{ request.user.display_name }}" disabled>
-          <p class="mt-1 text-[11.5px] text-slate-400">Set on your account &mdash; contact the ICT Cell to change it.</p></div>
-        <div><label class="label" for="nbn">Student name (Bangla)</label>
-          <input id="nbn" class="input" name="name_bn" value="{{ student.name_bn }}" lang="bn" placeholder="বাংলায় নাম"></div>
+        <div>
+          <label class="label" for="nen">Student name (English)</label>
+          <input id="nen" class="input cursor-not-allowed bg-slate-50 text-slate-500" value="{{ request.user.display_name }}" disabled>
+          <p class="mt-1.5 flex items-center gap-1 text-[11.5px] text-slate-400">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            Set on your account &mdash; contact the ICT Cell to change it.</p>
+        </div>
+        <div>
+          <label class="label" for="nbn">Student name (Bangla) <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+          <input id="nbn" class="input" name="name_bn" value="{{ student.name_bn }}" lang="bn"
+                 maxlength="120" autocomplete="off" placeholder="বাংলায় নাম">
+        </div>
       </div>
+
       <div class="grid gap-4 sm:grid-cols-2">
-        <div><label class="label" for="fen">Father's name (English)</label>
-          <input id="fen" class="input" name="father_name" value="{{ student.father_name }}"></div>
-        <div><label class="label" for="fbn">Father's name (Bangla)</label>
-          <input id="fbn" class="input" name="father_name_bn" value="{{ student.father_name_bn }}" lang="bn" placeholder="পিতার নাম"></div>
+        <div>
+          <label class="label" for="fen">Father's name (English) <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+          <input id="fen" class="input" name="father_name" value="{{ student.father_name }}"
+                 maxlength="120" autocomplete="off" placeholder="Full name">
+        </div>
+        <div>
+          <label class="label" for="fbn">Father's name (Bangla)</label>
+          <input id="fbn" class="input" name="father_name_bn" value="{{ student.father_name_bn }}" lang="bn"
+                 maxlength="120" autocomplete="off" placeholder="পিতার নাম">
+        </div>
       </div>
+
       <div class="grid gap-4 sm:grid-cols-2">
-        <div><label class="label" for="men">Mother's name (English)</label>
-          <input id="men" class="input" name="mother_name" value="{{ student.mother_name }}"></div>
-        <div><label class="label" for="mbn">Mother's name (Bangla)</label>
-          <input id="mbn" class="input" name="mother_name_bn" value="{{ student.mother_name_bn }}" lang="bn" placeholder="মাতার নাম"></div>
+        <div>
+          <label class="label" for="men">Mother's name (English) <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+          <input id="men" class="input" name="mother_name" value="{{ student.mother_name }}"
+                 maxlength="120" autocomplete="off" placeholder="Full name">
+        </div>
+        <div>
+          <label class="label" for="mbn">Mother's name (Bangla)</label>
+          <input id="mbn" class="input" name="mother_name_bn" value="{{ student.mother_name_bn }}" lang="bn"
+                 maxlength="120" autocomplete="off" placeholder="মাতার নাম">
+        </div>
       </div>
-      <div class="sm:max-w-xs">
-        <label class="label" for="rel">Religion</label>
-        <select id="rel" name="religion" class="input">
-          <option value="">Not stated</option>
-          {% for value, label in religions %}
-          <option value="{{ value }}" {% if student.religion == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="label" for="rel">Religion <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+          <select id="rel" name="religion" class="input">
+            <option value="">Not stated</option>
+            {% for value, label in religions %}
+            <option value="{{ value }}" {% if student.religion == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="label" for="bg">Blood group</label>
+          <select id="bg" name="blood_group" class="input">
+            <option value="">Not stated</option>
+            {% if student.blood_group and student.blood_group not in "A+,A-,B+,B-,AB+,AB-,O+,O-" %}
+            <option value="{{ student.blood_group }}" selected>{{ student.blood_group }}</option>
+            {% endif %}
+            <option value="A+" {% if student.blood_group == "A+" %}selected{% endif %}>A+</option>
+            <option value="A-" {% if student.blood_group == "A-" %}selected{% endif %}>A&minus;</option>
+            <option value="B+" {% if student.blood_group == "B+" %}selected{% endif %}>B+</option>
+            <option value="B-" {% if student.blood_group == "B-" %}selected{% endif %}>B&minus;</option>
+            <option value="AB+" {% if student.blood_group == "AB+" %}selected{% endif %}>AB+</option>
+            <option value="AB-" {% if student.blood_group == "AB-" %}selected{% endif %}>AB&minus;</option>
+            <option value="O+" {% if student.blood_group == "O+" %}selected{% endif %}>O+</option>
+            <option value="O-" {% if student.blood_group == "O-" %}selected{% endif %}>O&minus;</option>
+          </select>
+          <p class="mt-1.5 text-[11.5px] text-slate-400">Printed on your ID card and used by the Medical Centre.</p>
+        </div>
       </div>
     </div>
   </section>
 
+  <!-- ── Guardian details ────────────────────────────────────── -->
   <section class="card">
-    <div class="card-head"><h2 class="card-title">Guardian details</h2></div>
+    <div class="card-head">
+      <h2 class="card-title flex items-center gap-2">
+        <span class="grid h-7 w-7 place-items-center rounded-lg bg-violet-50 text-violet-700">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M2.5 20c0-3.4 2.9-5.2 6.5-5.2s6.5 1.8 6.5 5.2M17 14.8c2.7.3 4.5 1.9 4.5 4.4"/></svg></span>
+        Guardian details</h2>
+    </div>
     <div class="space-y-4 px-5 py-5">
-      <div><label class="label" for="gn">Guardian name</label>
-        <input id="gn" class="input" name="guardian_name" value="{{ student.guardian_name }}" placeholder="Full name"></div>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div><label class="label" for="gr">Relation</label>
-          <input id="gr" class="input" name="guardian_relation" value="{{ student.guardian_relation }}" placeholder="Father / Mother"></div>
-        <div><label class="label" for="gc">Contact no.</label>
-          <input id="gc" class="input" name="guardian_contact" value="{{ student.guardian_contact }}" placeholder="017XXXXXXXX"></div>
+      <div>
+        <label class="label" for="gn">Guardian name</label>
+        <input id="gn" class="input" name="guardian_name" value="{{ student.guardian_name }}"
+               maxlength="120" autocomplete="off" placeholder="Full name">
       </div>
-      <div><label class="label" for="go">Occupation</label>
-        <input id="go" class="input" name="guardian_occupation" value="{{ student.guardian_occupation }}"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="label" for="gr">Relation</label>
+          <input id="gr" class="input" name="guardian_relation" value="{{ student.guardian_relation }}"
+                 maxlength="40" list="relations" autocomplete="off" placeholder="Father / Mother">
+          <datalist id="relations">
+            <option value="Father"></option><option value="Mother"></option>
+            <option value="Brother"></option><option value="Sister"></option>
+            <option value="Uncle"></option><option value="Aunt"></option>
+            <option value="Grandfather"></option><option value="Grandmother"></option>
+          </datalist>
+        </div>
+        <div>
+          <label class="label" for="gc">Contact no.</label>
+          <input id="gc" type="tel" class="input" name="guardian_contact" value="{{ student.guardian_contact }}"
+                 maxlength="20" inputmode="tel" autocomplete="tel" placeholder="017XXXXXXXX">
+        </div>
+      </div>
+      <div>
+        <label class="label" for="go">Occupation</label>
+        <input id="go" class="input" name="guardian_occupation" value="{{ student.guardian_occupation }}"
+               maxlength="80" autocomplete="off" placeholder="e.g. Teacher, Farmer, Business">
+      </div>
+      <p class="flex items-start gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-[11.5px] leading-relaxed text-slate-500">
+        <svg class="mt-px h-3.5 w-3.5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        The guardian recorded here is the person the university contacts in an emergency.
+      </p>
     </div>
   </section>
 
+  <!-- ── Your contact details ────────────────────────────────── -->
   <section class="card">
-    <div class="card-head"><h2 class="card-title">Your contact details</h2></div>
+    <div class="card-head">
+      <h2 class="card-title flex items-center gap-2">
+        <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-700">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        Your contact details</h2>
+    </div>
     <div class="space-y-4 px-5 py-5">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div><label class="label" for="cn">Contact no.</label>
-          <input id="cn" class="input" name="contact_no" value="{{ student.contact_no }}"></div>
-        <div><label class="label" for="bg">Blood group</label>
-          <input id="bg" class="input" name="blood_group" value="{{ student.blood_group }}" placeholder="B+"></div>
+      <div>
+        <label class="label" for="cn">Mobile number <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+        <input id="cn" type="tel" class="input" name="contact_no" value="{{ student.contact_no }}"
+               maxlength="20" inputmode="tel" autocomplete="tel" placeholder="017XXXXXXXX">
       </div>
-      <div><label class="label" for="pa">Present address</label>
-        <input id="pa" class="input" name="present_address" value="{{ student.present_address }}"></div>
-      <div><label class="label" for="pma">Permanent address</label>
-        <input id="pma" class="input" name="permanent_address" value="{{ student.permanent_address }}"></div>
+      <div>
+        <label class="label" for="pa">Present address <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+        <input id="pa" class="input" name="present_address" value="{{ student.present_address }}"
+               maxlength="200" autocomplete="street-address" placeholder="Village / road, upazila, district">
+      </div>
+      <div>
+        <div class="flex items-center justify-between">
+          <label class="label" for="pma">Permanent address <abbr class="no-underline text-amber-600" title="Required for your examination form">*</abbr></label>
+          <button type="button" id="copyAddr" class="mb-1.5 text-[11.5px] font-semibold text-brand-600 hover:underline">Same as present</button>
+        </div>
+        <input id="pma" class="input" name="permanent_address" value="{{ student.permanent_address }}"
+               maxlength="200" autocomplete="street-address" placeholder="Village / road, upazila, district">
+      </div>
+      <p class="flex items-start gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-[11.5px] leading-relaxed text-slate-500">
+        <svg class="mt-px h-3.5 w-3.5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        Admit cards, certificates and postal notices are sent to your permanent address.
+      </p>
     </div>
   </section>
 
-  <div class="lg:col-span-2"><button class="btn" type="submit">Save changes</button></div>
+  <!-- ── Action bar ──────────────────────────────────────────── -->
+  <div class="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-7 sm:px-7 lg:col-span-2">
+    <p class="text-[11.5px] text-slate-500">
+      <span class="text-amber-600">*</span> Required before an examination form can be submitted.
+      Every change is written to the audit log.
+    </p>
+    <div class="flex gap-2">
+      <a href="{% url 'studentpanel:profile' %}" class="btn-ghost">Cancel</a>
+      <button class="btn" type="submit">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4L19 7"/></svg>
+        Save changes</button>
+    </div>
+  </div>
 </form>
+{% endwith %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // "Same as present" simply mirrors the field above - most students have one
+  // address, and retyping it is the commonest reason this form is left blank.
+  document.getElementById('copyAddr').onclick = () => {
+    document.getElementById('pma').value = document.getElementById('pa').value;
+    document.getElementById('pma').focus();
+  };
+</script>
 {% endblock %}

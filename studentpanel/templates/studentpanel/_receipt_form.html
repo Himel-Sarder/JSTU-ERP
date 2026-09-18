@@ -1,0 +1,54 @@
+{% comment %}
+Upload form for a bank payment slip. Included by form_fillup_payment.html in
+three places: first upload, replace, and retry after a rejection.
+{% endcomment %}
+<form method="post" enctype="multipart/form-data" class="space-y-4">{% csrf_token %}
+  <div>
+    <label class="label" for="receipt">Bank payment slip</label>
+    <label for="receipt"
+           class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 px-5 py-8 text-center transition hover:border-brand-300 hover:bg-brand-50/40">
+      <span class="grid h-11 w-11 place-items-center rounded-xl bg-white text-brand-700 shadow-sm">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      </span>
+      <span class="font-display text-[13.5px] font-bold text-slate-700">Choose a photo or PDF of the slip</span>
+      <span id="receiptName" class="text-[12px] text-slate-400">PNG, JPG, WEBP or PDF &middot; up to 5 MB</span>
+    </label>
+    <input id="receipt" name="receipt" type="file" class="sr-only"
+           accept=".png,.jpg,.jpeg,.webp,.pdf,image/*,application/pdf" required>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label class="label" for="method">Paid through</label>
+      <select id="method" name="method" class="input">
+        {% for v, l in methods %}
+        <option value="{{ v }}" {% if v == 'COUNTER' %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="label" for="txn">Transaction / slip no. <span class="font-normal normal-case tracking-normal text-slate-400">(optional)</span></label>
+      <input id="txn" name="transaction_id" class="input font-mono" maxlength="40"
+             autocomplete="off" placeholder="As printed on the slip">
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+    <p class="text-[11.5px] leading-relaxed text-slate-500">
+      Uploading marks this invoice paid. The Accounts Office verifies the slip before your form is approved.</p>
+    <button class="btn" type="submit">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Upload receipt</button>
+  </div>
+</form>
+
+<script>
+  // Name the picked file, so it is obvious something was actually attached.
+  (function () {
+    var input = document.getElementById('receipt'), label = document.getElementById('receiptName');
+    if (input && label) input.addEventListener('change', function () {
+      label.textContent = input.files.length ? input.files[0].name
+                                             : 'PNG, JPG, WEBP or PDF · up to 5 MB';
+    });
+  })();
+</script>

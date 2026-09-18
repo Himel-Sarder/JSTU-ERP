@@ -2,7 +2,7 @@
 {% block title %}Payment invoice{% endblock %}
 {% block content %}
 <div class="mb-6"><h1 class="page-title">Payment invoice</h1>
-  <p class="page-sub">Examination and semester fees, payable through the Janata Bank gateway or mobile financial services.</p></div>
+  <p class="page-sub">Pay at the bank counter, then upload the slip against the invoice for the Accounts Office to verify.</p></div>
 
 <div class="mb-5 grid gap-4 sm:grid-cols-3">
   <div class="stat"><span class="stat-ico bg-rose-100 text-rose-700">
@@ -20,7 +20,7 @@
   <div class="card-head"><h2 class="card-title">Invoices</h2></div>
   <div class="overflow-x-auto">
     <table class="tbl">
-      <thead><tr><th>Invoice</th><th>Examination</th><th>Amount</th><th>Status</th><th>Pay with</th></tr></thead>
+      <thead><tr><th>Invoice</th><th>Examination</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>
       <tbody>
         {% for f in fillups %}
         <tr>
@@ -30,14 +30,12 @@
           <td><span class="chip {% if f.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.get_payment_status_display }}</span></td>
           <td>
             {% if f.payment_status == 'UNPAID' %}
-            <form method="post" class="flex items-center gap-2">{% csrf_token %}
-              <input type="hidden" name="fillup" value="{{ f.pk }}">
-              <select name="method" class="input w-40 py-1.5 text-[12.5px]">
-                {% for v, l in methods %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
-              </select>
-              <button class="btn px-4 py-1.5 text-[12.5px]">Pay now</button>
-            </form>
-            {% else %}<span class="text-[12.5px] text-slate-400">Settled</span>{% endif %}
+            <a href="{% url 'studentpanel:form_fillup_payment' f.pk %}"
+               class="btn px-4 py-1.5 text-[12.5px]">Upload receipt</a>
+            {% else %}
+            <a href="{% url 'studentpanel:form_fillup_payment' f.pk %}"
+               class="text-[12.5px] font-semibold text-brand-600 hover:underline">View receipt</a>
+            {% endif %}
           </td>
         </tr>
         {% empty %}<tr><td colspan="5" class="empty">No invoice has been generated for you yet.</td></tr>{% endfor %}

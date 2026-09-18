@@ -1,33 +1,156 @@
 {% extends "studentpanel/base.html" %}
 {% block title %}Bank account{% endblock %}
 {% block content %}
-<div class="mb-6"><h1 class="page-title">Bank account details</h1>
-  <p class="page-sub">Scholarships and stipends are disbursed to the account recorded here.</p></div>
+
+<!-- ── Page header ───────────────────────────────────────────── -->
+<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <h1 class="page-title">Bank account details</h1>
+    <p class="page-sub">Scholarships and stipends are disbursed to the account recorded here.</p>
+  </div>
+  <a href="{% url 'studentpanel:profile' %}" class="btn-ghost">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+    Back to profile</a>
+</div>
 
 <div class="grid gap-5 lg:grid-cols-3">
-  <form method="post" class="card lg:col-span-2">{% csrf_token %}
-    <div class="card-head"><h2 class="card-title">Account information</h2></div>
+
+  <!-- ── Account form ────────────────────────────────────────── -->
+  <form method="post" class="card lg:col-span-2 lg:self-start">{% csrf_token %}
+    <div class="card-head">
+      <h2 class="card-title flex items-center gap-2">
+        <span class="grid h-7 w-7 place-items-center rounded-lg bg-amber-50 text-amber-700">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 4l9 5.5M5 10v8m4-8v8m6-8v8m4-8v8M3 21h18"/></svg></span>
+        Account information</h2>
+      {% if student.bank_account_no %}
+      <span class="chip bg-emerald-50 text-emerald-700">On record</span>
+      {% else %}
+      <span class="chip bg-amber-50 text-amber-700">Not provided</span>
+      {% endif %}
+    </div>
+
     <div class="space-y-4 px-5 py-5">
       <div class="grid gap-4 sm:grid-cols-2">
-        <div><label class="label" for="bn">Bank name</label>
-          <input id="bn" class="input" name="bank_name" value="{{ student.bank_name }}" placeholder="Janata Bank PLC"></div>
-        <div><label class="label" for="bb">Branch</label>
-          <input id="bb" class="input" name="bank_branch" value="{{ student.bank_branch }}" placeholder="Jamalpur Branch"></div>
+        <div>
+          <label class="label" for="bn">Bank name</label>
+          <input id="bn" class="input" name="bank_name" value="{{ student.bank_name }}"
+                 maxlength="80" list="banks" autocomplete="off" placeholder="Janata Bank PLC">
+          <datalist id="banks">
+            <option value="Janata Bank PLC"></option><option value="Sonali Bank PLC"></option>
+            <option value="Agrani Bank PLC"></option><option value="Rupali Bank PLC"></option>
+            <option value="Bangladesh Krishi Bank"></option><option value="Islami Bank Bangladesh PLC"></option>
+            <option value="Dutch-Bangla Bank PLC"></option><option value="BRAC Bank PLC"></option>
+            <option value="Pubali Bank PLC"></option><option value="Uttara Bank PLC"></option>
+            <option value="The City Bank PLC"></option><option value="Eastern Bank PLC"></option>
+            <option value="Prime Bank PLC"></option><option value="Mercantile Bank PLC"></option>
+            <option value="Trust Bank PLC"></option>
+          </datalist>
+        </div>
+        <div>
+          <label class="label" for="bb">Branch</label>
+          <input id="bb" class="input" name="bank_branch" value="{{ student.bank_branch }}"
+                 maxlength="80" autocomplete="off" placeholder="Jamalpur Branch">
+        </div>
       </div>
-      <div><label class="label" for="ba">Account number</label>
-        <input id="ba" class="input" name="bank_account_no" value="{{ student.bank_account_no }}" placeholder="00000000000000"></div>
-      <button class="btn" type="submit">Save account details</button>
+
+      <div>
+        <label class="label" for="ba">Account number</label>
+        <input id="ba" class="input font-mono tracking-wide" name="bank_account_no" value="{{ student.bank_account_no }}"
+               maxlength="30" inputmode="numeric" autocomplete="off" placeholder="00000000000000">
+        <p class="mt-1.5 flex items-start gap-1.5 text-[11.5px] leading-relaxed text-slate-400">
+          <svg class="mt-px h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          Copy it exactly as printed on your cheque book or passbook &mdash; a single wrong digit fails the whole disbursement.</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-5 py-4">
+      <p class="text-[11.5px] text-slate-500">The Accounts Office verifies any change before the next disbursement cycle.</p>
+      <div class="flex gap-2">
+        <a href="{% url 'studentpanel:profile' %}" class="btn-ghost">Cancel</a>
+        <button class="btn" type="submit">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4L19 7"/></svg>
+          Save account details</button>
+      </div>
     </div>
   </form>
 
-  <section class="rounded-2xl border border-sky-200 bg-sky-50/70 p-5">
-    <h3 class="font-display text-[15px] font-bold text-sky-900">Before you save</h3>
-    <ul class="mt-3 space-y-2.5 text-[13px] text-sky-800">
-      <li>The account must be in your own name, matching your student record.</li>
-      <li>Only scheduled banks operating in Bangladesh are accepted.</li>
-      <li>Changes are verified by the Accounts Office before the next disbursement cycle.</li>
-      <li>Contact accounts@jstu.edu.bd if a disbursement fails.</li>
-    </ul>
-  </section>
+  <!-- ── Side rail ───────────────────────────────────────────── -->
+  <div class="space-y-5">
+
+    {% if student.bank_account_no %}
+    <!-- Recorded account, drawn the way it appears on a passbook. -->
+    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 p-5 text-white shadow-sm">
+      <span class="pointer-events-none absolute inset-0 opacity-[.16]"
+            style="background-image:radial-gradient(circle at 1px 1px,#fff 1px,transparent 0);background-size:22px 22px"></span>
+      <span class="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-white/10 blur-3xl"></span>
+
+      <div class="relative flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[9.5px] font-bold uppercase tracking-[.2em] text-brand-100/80">Disbursement account</p>
+          <p class="mt-1 truncate font-display text-[15px] font-bold">{{ student.bank_name|default:"Bank not recorded" }}</p>
+          <p class="truncate text-[12px] text-brand-100">{{ student.bank_branch|default:"Branch not recorded" }}</p>
+        </div>
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/10 ring-1 ring-inset ring-white/20">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 4l9 5.5M5 10v8m4-8v8m6-8v8m4-8v8M3 21h18"/></svg>
+        </span>
+      </div>
+
+      <p id="acctNo" class="relative mt-6 font-mono text-[17px] tracking-[.16em]"
+         data-full="{{ student.bank_account_no }}"
+         data-masked="&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;{{ student.bank_account_no|slice:'-4:' }}">
+        &bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;{{ student.bank_account_no|slice:"-4:" }}</p>
+
+      <div class="relative mt-4 flex items-end justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-[9.5px] font-bold uppercase tracking-[.14em] text-brand-100/70">Account holder</p>
+          <p class="truncate text-[13px] font-semibold">{{ request.user.display_name }}</p>
+        </div>
+        <button type="button" id="revealBtn"
+                class="shrink-0 rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-bold text-white ring-1 ring-inset ring-white/20 transition hover:bg-white/20">
+          Show</button>
+      </div>
+    </section>
+    {% else %}
+    <section class="rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-amber-100 text-amber-700">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      </span>
+      <h3 class="mt-3 font-display text-[14.5px] font-bold text-amber-900">No account on record</h3>
+      <p class="mt-1.5 text-[12.5px] leading-relaxed text-amber-800">
+        Any scholarship or stipend awarded to you cannot be paid out until these details are saved.
+      </p>
+    </section>
+    {% endif %}
+
+    <section class="rounded-2xl border border-sky-200 bg-sky-50/70 p-5">
+      <h3 class="font-display text-[14.5px] font-bold text-sky-900">Before you save</h3>
+      <ul class="mt-3 space-y-2.5 text-[12.5px] leading-relaxed text-sky-800">
+        <li class="flex gap-2"><svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 4.5 4.5L19 7"/></svg>
+          The account must be in your own name, matching your student record.</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 4.5 4.5L19 7"/></svg>
+          Only scheduled banks operating in Bangladesh are accepted.</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 4.5 4.5L19 7"/></svg>
+          Changes are verified by the Accounts Office before the next disbursement cycle.</li>
+      </ul>
+      <a href="mailto:accounts@jstu.edu.bd"
+         class="mt-4 flex items-center gap-2 border-t border-sky-200/70 pt-3 text-[12.5px] font-semibold text-sky-800 hover:underline">
+        <svg class="h-4 w-4 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+        accounts@jstu.edu.bd</a>
+      <p class="mt-1 text-[11.5px] text-sky-700/80">Write to the Accounts Office if a disbursement fails.</p>
+    </section>
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // The account number sits masked on the page; the student can reveal it to
+  // check it against a passbook without opening the edit field.
+  const acct = document.getElementById('acctNo'), reveal = document.getElementById('revealBtn');
+  if (acct && reveal) reveal.onclick = () => {
+    const shown = reveal.textContent.trim() === 'Hide';
+    acct.innerHTML = shown ? acct.dataset.masked : acct.dataset.full;
+    reveal.textContent = shown ? 'Show' : 'Hide';
+  };
+</script>
 {% endblock %}

@@ -2,23 +2,89 @@
 {% block title %}Payment{% endblock %}
 {% block content %}
 <div class="mb-6"><h1 class="page-title">Examination fee payment</h1>
-  <p class="page-sub">Your form has been submitted. Settle the fee to complete the fill-up.</p></div>
+  <p class="page-sub">Your form has been submitted. Pay the fee at the bank, then upload the slip here.</p></div>
 
 <div class="grid gap-5 lg:grid-cols-3">
   <section class="card lg:col-span-2">
-    <div class="card-head"><h2 class="card-title">Payment</h2></div>
-    <div class="px-5 py-16 text-center">
-      <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-700">
-        <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-      </span>
-      <p class="mt-4 font-display text-[18px] font-extrabold text-slate-800">Coming soon</p>
-      <p class="mx-auto mt-1 max-w-sm text-[13.5px] leading-relaxed text-slate-500">
-        Online payment is not wired up yet. Your application is saved and the invoice
-        is listed below &mdash; pay at the bank counter for now.</p>
+    <div class="card-head">
+      <h2 class="card-title flex items-center gap-2">
+        <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-700">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 14l2 2 4-4"/></svg></span>
+        Payment receipt</h2>
+      {% if payment %}
+      <span class="chip {% if payment.status == 'VERIFIED' %}bg-emerald-50 text-emerald-700{% elif payment.status == 'FAILED' %}bg-rose-50 text-rose-700{% else %}bg-amber-50 text-amber-700{% endif %}">
+        {{ payment.get_status_display }}</span>
+      {% endif %}
     </div>
+
+    {# ── 1. Verified ─────────────────────────────────────────── #}
+    {% if payment and payment.status == 'VERIFIED' %}
+    <div class="px-5 py-6">
+      <div class="flex items-start gap-3 rounded-xl bg-emerald-50 px-4 py-3.5 ring-1 ring-inset ring-emerald-100">
+        <svg class="mt-px h-5 w-5 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+        <div>
+          <p class="font-display text-[14px] font-bold text-emerald-800">Payment verified by the Accounts Office</p>
+          <p class="mt-1 text-[12.5px] leading-relaxed text-emerald-700">
+            Verified {{ payment.verified_at|date:"d M Y, h:i A" }}. Your form has moved on for approval.</p>
+        </div>
+      </div>
+      {% include "studentpanel/_receipt_preview.html" with payment=payment %}
+    </div>
+
+    {# ── 2. Rejected — let them try again ────────────────────── #}
+    {% elif payment and payment.status == 'FAILED' %}
+    <div class="px-5 py-6">
+      <div class="mb-5 flex items-start gap-3 rounded-xl bg-rose-50 px-4 py-3.5 ring-1 ring-inset ring-rose-100">
+        <svg class="mt-px h-5 w-5 shrink-0 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        <div>
+          <p class="font-display text-[14px] font-bold text-rose-800">The Accounts Office could not accept this slip</p>
+          <p class="mt-1 text-[12.5px] leading-relaxed text-rose-700">
+            {{ payment.remarks|default:"No reason was recorded." }} Upload a clearer copy below.</p>
+        </div>
+      </div>
+      {% include "studentpanel/_receipt_form.html" %}
+    </div>
+
+    {# ── 3. Uploaded, awaiting verification ──────────────────── #}
+    {% elif payment %}
+    <div class="px-5 py-6">
+      <div class="flex items-start gap-3 rounded-xl bg-amber-50 px-4 py-3.5 ring-1 ring-inset ring-amber-100">
+        <svg class="mt-px h-5 w-5 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <div>
+          <p class="font-display text-[14px] font-bold text-amber-800">Waiting for the Accounts Office</p>
+          <p class="mt-1 text-[12.5px] leading-relaxed text-amber-700">
+            Uploaded {{ payment.payment_date|date:"d M Y, h:i A" }}. Your invoice is marked paid;
+            approval follows once the slip is checked.</p>
+        </div>
+      </div>
+      {% include "studentpanel/_receipt_preview.html" with payment=payment %}
+      <details class="mt-5 border-t border-slate-100 pt-4">
+        <summary class="cursor-pointer text-[12.5px] font-semibold text-brand-600 hover:underline">Replace this slip</summary>
+        <div class="mt-4">{% include "studentpanel/_receipt_form.html" %}</div>
+      </details>
+    </div>
+
+    {# ── 4. Nothing uploaded yet ─────────────────────────────── #}
+    {% else %}
+    <div class="px-5 py-6">
+      <ol class="mb-5 grid gap-3 sm:grid-cols-3">
+        <li class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+          <p class="font-display text-[11px] font-bold uppercase tracking-wider text-brand-700">Step 1</p>
+          <p class="mt-1 text-[12.5px] leading-relaxed text-slate-600">Pay <b>BDT {{ fillup.amount|floatformat:0 }}</b> against invoice
+            <span class="font-mono">{{ fillup.invoice_no }}</span> at the bank counter.</p></li>
+        <li class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+          <p class="font-display text-[11px] font-bold uppercase tracking-wider text-brand-700">Step 2</p>
+          <p class="mt-1 text-[12.5px] leading-relaxed text-slate-600">Photograph or scan the stamped slip and upload it here.</p></li>
+        <li class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+          <p class="font-display text-[11px] font-bold uppercase tracking-wider text-brand-700">Step 3</p>
+          <p class="mt-1 text-[12.5px] leading-relaxed text-slate-600">Accounts verifies it and your form is approved.</p></li>
+      </ol>
+      {% include "studentpanel/_receipt_form.html" %}
+    </div>
+    {% endif %}
   </section>
 
-  <section class="card">
+  <section class="card lg:self-start">
     <div class="card-head"><h2 class="card-title">Invoice</h2></div>
     <dl class="space-y-4 px-5 py-5">
       <div><dt class="label">Examination</dt>
@@ -31,7 +97,7 @@
       <div><dt class="label">Courses listed</dt>
         <dd class="text-[14px] font-semibold text-slate-800">{{ fillup.courses.count }}</dd></div>
       <div><dt class="label">Payment status</dt>
-        <dd><span class="chip bg-slate-100 text-slate-600">{{ fillup.get_payment_status_display }}</span></dd></div>
+        <dd><span class="chip {% if fillup.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ fillup.get_payment_status_display }}</span></dd></div>
       <div><dt class="label">Approval</dt>
         <dd><span class="chip bg-{{ fillup.state_tone }}-100 text-{{ fillup.state_tone }}-700">{{ fillup.get_approval_status_display }}</span></dd></div>
     </dl>

@@ -297,16 +297,61 @@ def fillup(request):
     if request.method == "POST":
         row = get_object_or_404(FormFillup, pk=request.POST.get("fillup"))
         action = request.POST.get("action")
+
+        # --- verifying the bank slip the student uploaded -----------------
+        if action in ("verify_payment", "reject_payment"):
+            payment = row.payments.first()
+            if payment is None:
+                messages.error(request, f"{row.invoice_no} has no receipt to check.")
+                return redirect("adminpanel:fillup")
+
+            if action == "verify_payment":
+                payment.status = FeePayment.Status.VERIFIED
+                payment.verified_at = timezone.now()
+                payment.remarks = ""
+                payment.save(update_fields=["status", "verified_at", "remarks"])
+                row.payment_status = FormFillup.PaymentStatus.PAID
+                row.approval_status = S.APPROVED
+                row.decided_at = timezone.now()
+                row.save(update_fields=["payment_status", "approval_status", "decided_at"])
+                AuditLog.record(request, AuditLog.Action.APPROVE, "FeePayment", row.invoice_no)
+                note = f"Payment for {row.invoice_no} verified and approved."
+                card, created = row.ensure_admit_card()
+                if created:
+                    AuditLog.record(request, AuditLog.Action.CREATE, "AdmitCard", card.serial_no)
+                    note += f" Admit card {card.serial_no} generated."
+                messages.success(request, note)
+            else:
+                payment.status = FeePayment.Status.FAILED
+                payment.verified_at = timezone.now()
+                payment.remarks = request.POST.get("remarks", "").strip()[:200]
+                payment.save(update_fields=["status", "verified_at", "remarks"])
+                # Back to unpaid, so the student can upload a readable slip.
+                row.payment_status = FormFillup.PaymentStatus.UNPAID
+                row.approval_status = S.PENDING
+                row.save(update_fields=["payment_status", "approval_status"])
+                AuditLog.record(request, AuditLog.Action.REJECT, "FeePayment", row.invoice_no)
+                messages.warning(request, f"Receipt for {row.invoice_no} rejected.")
+            return redirect("adminpanel:fillup")
+
         if action in dict(S.choices):
             row.approval_status = action
             row.decided_at = timezone.now()
             row.remarks = request.POST.get("remarks", "").strip()
             row.save()
             AuditLog.record(request, AuditLog.Action.APPROVE, "FormFillup", row.invoice_no)
-            messages.success(request, f"{row.invoice_no} moved to {row.get_approval_status_display()}.")
+            note = f"{row.invoice_no} moved to {row.get_approval_status_display()}."
+            # Approval is what entitles a student to sit the examination, so
+            # the admit card is raised here rather than in a separate run.
+            card, created = row.ensure_admit_card()
+            if created:
+                AuditLog.record(request, AuditLog.Action.CREATE, "AdmitCard", card.serial_no)
+                note += f" Admit card {card.serial_no} generated."
+            messages.success(request, note)
         return redirect("adminpanel:fillup")
 
-    rows = FormFillup.objects.select_related("student__user", "deadline")
+    rows = (FormFillup.objects.select_related("student__user", "deadline")
+            .prefetch_related("payments"))
     state = request.GET.get("state", "")
     if state:
         rows = rows.filter(approval_status=state)
@@ -320,6 +365,11 @@ def fillup(request):
             "approved": FormFillup.objects.filter(approval_status=S.APPROVED).count(),
             "final": FormFillup.objects.filter(approval_status=S.FINAL).count(),
             "held": FormFillup.objects.filter(approval_status=S.HELD).count(),
+            # A slip is either NULL or "" when absent - exclude both, or the
+            # queue count overstates what there is to look at.
+            "receipts": FeePayment.objects.filter(
+                status=FeePayment.Status.PENDING
+            ).exclude(receipt="").exclude(receipt__isnull=True).count(),
         },
     ))
 
@@ -370,15 +420,14 @@ def admit_cards(request):
         action = request.POST.get("action")
         if action == "generate":
             made = 0
+            # A back-stop for applications approved before this was automatic.
             approved = FormFillup.objects.filter(
                 deadline=deadline_obj,
-                approval_status=FormFillup.ApprovalStatus.FINAL,
+                approval_status__in=[FormFillup.ApprovalStatus.APPROVED,
+                                     FormFillup.ApprovalStatus.FINAL],
             ).select_related("student")
             for row in approved:
-                _, created = AdmitCard.objects.get_or_create(
-                    student=row.student, deadline=deadline_obj,
-                    defaults={"serial_no": f"AC-{deadline_obj.year}-{random.randint(100000, 999999)}"},
-                )
+                _, created = row.ensure_admit_card()
                 made += int(created)
             messages.success(request, f"{made} admit card(s) generated for {deadline_obj.exam_title}.")
         elif action == "release":

@@ -1,0 +1,34 @@
+{# The slip already on file, with the details Accounts sees. #}
+<div class="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_200px]">
+  <dl class="grid gap-3 sm:grid-cols-2">
+    <div class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+      <dt class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Paid through</dt>
+      <dd class="mt-1 text-[13.5px] font-semibold text-slate-800">{{ payment.get_method_display }}</dd></div>
+    <div class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+      <dt class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Transaction / slip no.</dt>
+      <dd class="mt-1 font-mono text-[13.5px] font-semibold text-slate-800">{{ payment.transaction_id|default:"—" }}</dd></div>
+    <div class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+      <dt class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Amount</dt>
+      <dd class="mt-1 text-[13.5px] font-semibold text-slate-800">BDT {{ payment.amount|floatformat:0 }}</dd></div>
+    <div class="rounded-xl bg-slate-50/80 px-4 py-3 ring-1 ring-inset ring-slate-100">
+      <dt class="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Uploaded</dt>
+      <dd class="mt-1 text-[13.5px] font-semibold text-slate-800">{{ payment.payment_date|date:"d M Y" }}</dd></div>
+  </dl>
+
+  {% if payment.receipt %}
+  <a href="{{ payment.receipt.url }}" target="_blank" rel="noopener noreferrer"
+     class="group block overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+    {% if payment.receipt_is_image %}
+    <img src="{{ payment.receipt.url }}" alt="Uploaded bank slip"
+         class="h-40 w-full object-cover transition group-hover:opacity-90">
+    {% else %}
+    <span class="flex h-40 w-full flex-col items-center justify-center gap-2 text-slate-400">
+      <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+      <span class="text-[12px] font-semibold">PDF slip</span>
+    </span>
+    {% endif %}
+    <span class="block truncate border-t border-slate-200 bg-white px-3 py-2 text-[11.5px] font-semibold text-brand-600 group-hover:underline">
+      {{ payment.receipt_filename }}</span>
+  </a>
+  {% endif %}
+</div>

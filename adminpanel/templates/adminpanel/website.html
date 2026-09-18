@@ -1,0 +1,47 @@
+{% extends "adminpanel/base.html" %}
+{% block title %}Website control panel{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="page-title">Website control panel</h1>
+  <p class="page-sub">Add menu: page title, menu order, external link, sub-menu, status and page body.</p></div>
+
+<div class="grid gap-5 xl:grid-cols-5">
+  <form method="post" class="card xl:col-span-2">{% csrf_token %}
+    <div class="card-head"><h2 class="card-title">Add menu</h2></div>
+    <div class="space-y-4 px-5 py-5">
+      <div><label class="label" for="pt">Page title</label><input id="pt" name="page_title" class="input" required placeholder="Admissions"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="mo">Menu order</label><input id="mo" name="menu_order" type="number" min="1" value="1" class="input"></div>
+        <div><label class="label" for="st">Status</label>
+          <select id="st" name="status" class="input">{% for v, l in statuses %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+      </div>
+      <div><label class="label" for="pa">Sub-menu of</label>
+        <select id="pa" name="parent" class="input"><option value="">Top-level menu</option>
+          {% for p in parents %}<option value="{{ p.pk }}">{{ p.page_title }}</option>{% endfor %}</select></div>
+      <div><label class="label" for="el">External link</label><input id="el" name="external_link" type="url" class="input" placeholder="https://jstu.edu.bd/..."></div>
+      <div><label class="label" for="de">Page description</label><textarea id="de" name="description" rows="5" class="input" placeholder="Rich-text body shown on the public website"></textarea></div>
+      <button class="btn-gold w-full" type="submit">Add menu</button>
+    </div>
+  </form>
+
+  <section class="card xl:col-span-3 overflow-hidden">
+    <div class="card-head"><h2 class="card-title">Website menus</h2></div>
+    <div class="overflow-x-auto">
+      <table class="tbl">
+        <thead><tr><th>Order</th><th>Page title</th><th>Parent</th><th>Link</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for m in menus %}
+          <tr><td>{{ m.menu_order }}</td>
+            <td class="font-semibold text-slate-800">{{ m.page_title }}</td>
+            <td>{{ m.parent.page_title|default:"-" }}</td>
+            <td class="max-w-[180px] truncate text-[12.5px] text-slate-400">{{ m.external_link|default:"-" }}</td>
+            <td><span class="chip {% if m.status == 'PUBLISHED' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">{{ m.get_status_display }}</span></td>
+            <td><form method="post">{% csrf_token %}
+              <input type="hidden" name="menu" value="{{ m.pk }}"><input type="hidden" name="action" value="delete">
+              <button class="text-[12.5px] font-semibold text-rose-600 hover:underline">Remove</button></form></td></tr>
+          {% empty %}<tr><td colspan="6" class="empty">No website menus configured.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

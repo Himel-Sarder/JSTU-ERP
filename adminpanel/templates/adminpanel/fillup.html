@@ -4,13 +4,14 @@
 <div class="mb-6"><h1 class="page-title">Form fill-up management</h1>
   <p class="page-sub">Hold, release and approve applications as they move through the workflow.</p></div>
 
-<div class="mb-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-6">
+<div class="mb-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-7">
   <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-slate-900">{{ counts.active }}</p><p class="text-[11.5px] text-slate-500">Active</p></div>
   <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-amber-600">{{ counts.pending }}</p><p class="text-[11.5px] text-slate-500">Pending semester</p></div>
   <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-sky-600">{{ counts.accounts }}</p><p class="text-[11.5px] text-slate-500">Accounts seen</p></div>
   <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-emerald-600">{{ counts.approved }}</p><p class="text-[11.5px] text-slate-500">Approved</p></div>
   <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-violet-600">{{ counts.final }}</p><p class="text-[11.5px] text-slate-500">Final approval</p></div>
   <div class="card px-4 py-3"><p class="font-display text-lg font-extrabold text-rose-600">{{ counts.held }}</p><p class="text-[11.5px] text-slate-500">Held</p></div>
+  <div class="card px-4 py-3 ring-1 ring-amber-200"><p class="font-display text-lg font-extrabold text-amber-600">{{ counts.receipts }}</p><p class="text-[11.5px] text-slate-500">Receipts to verify</p></div>
 </div>
 
 <div class="mb-5 flex flex-wrap gap-2">
@@ -24,7 +25,7 @@
   <div class="card-head"><h2 class="card-title">Applications</h2><span class="text-[12px] text-slate-400">{{ rows|length }} record(s)</span></div>
   <div class="overflow-x-auto">
     <table class="tbl">
-      <thead><tr><th>Invoice</th><th>Student</th><th>Examination</th><th>Amount</th><th>Payment</th><th>Approval</th><th>Move to</th></tr></thead>
+      <thead><tr><th>Invoice</th><th>Student</th><th>Examination</th><th>Amount</th><th>Payment</th><th>Receipt</th><th>Approval</th><th>Move to</th></tr></thead>
       <tbody>
         {% for f in rows %}
         <tr>
@@ -33,6 +34,31 @@
           <td>{{ f.deadline.exam_title }}</td>
           <td>BDT {{ f.amount }}</td>
           <td><span class="chip {% if f.payment_status == 'PAID' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ f.get_payment_status_display }}</span></td>
+          <td>
+            {% with p=f.payments.all|first %}
+            {% if p and p.receipt %}
+            <a href="{{ p.receipt.url }}" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-600 hover:underline">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+              View slip</a>
+            <span class="ml-1 chip {% if p.status == 'VERIFIED' %}bg-emerald-100 text-emerald-700{% elif p.status == 'FAILED' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ p.get_status_display }}</span>
+            {% if p.transaction_id %}<span class="block font-mono text-[11px] text-slate-400">{{ p.transaction_id }}</span>{% endif %}
+            {% if p.status == 'PENDING' %}
+            <form method="post" class="mt-2 flex flex-wrap items-center gap-1.5">{% csrf_token %}
+              <input type="hidden" name="fillup" value="{{ f.pk }}">
+              <input name="remarks" class="input w-40 py-1 text-[11.5px]" maxlength="200"
+                     placeholder="Reason, if rejecting">
+              <button name="action" value="verify_payment"
+                      class="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11.5px] font-bold text-white transition hover:bg-emerald-700">Verify</button>
+              <button name="action" value="reject_payment"
+                      class="rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-[11.5px] font-bold text-rose-600 transition hover:bg-rose-50">Reject</button>
+            </form>
+            {% elif p.status == 'FAILED' and p.remarks %}
+            <span class="block max-w-[16rem] text-[11px] leading-relaxed text-rose-600">{{ p.remarks }}</span>
+            {% endif %}
+            {% else %}<span class="text-slate-300">&mdash;</span>{% endif %}
+            {% endwith %}
+          </td>
           <td><span class="chip bg-{{ f.state_tone }}-100 text-{{ f.state_tone }}-700">{{ f.get_approval_status_display }}</span></td>
           <td>
             <form method="post" class="flex items-center gap-2">{% csrf_token %}
@@ -44,7 +70,7 @@
             </form>
           </td>
         </tr>
-        {% empty %}<tr><td colspan="7" class="empty">No applications in this state.</td></tr>{% endfor %}
+        {% empty %}<tr><td colspan="8" class="empty">No applications in this state.</td></tr>{% endfor %}
       </tbody>
     </table>
   </div>

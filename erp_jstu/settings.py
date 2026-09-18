@@ -133,11 +133,20 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # (reaches templates as `jstu` via accounts.context_processors.university)
 JSTU = {
     "NAME": "Jamalpur Science and Technology University",
+    # The ampersand form the university prints on its ID cards and letterhead.
+    "NAME_AMP": "Jamalpur Science & Technology University",
     "SHORT_NAME": "JSTU",
     "LOCATION": "Jamalpur, Bangladesh",
+    "ADDRESS": "Melandah, Jamalpur-2012, Bangladesh",
+    "PHONE": "+8802223377503",
+    "WEBSITE": "www.jstu.ac.bd",
     "SYSTEM": "Enterprise Resource Planning System",
     "OWNER": "ICT Cell, JSTU",
     "LOGO_URL": "https://i.postimg.cc/Yqzj3c8Q/image.png",
+    # Artwork printed on the back of the ID card. Leave either blank and the
+    # card falls back to a plain panel rather than a broken image.
+    "CAMPUS_URL": "https://i.postimg.cc/fyJjXtRq/images.jpg",
+    "SIGNATURE_URL": "",
 }
 
 # --------------------------------------------------------------------------
