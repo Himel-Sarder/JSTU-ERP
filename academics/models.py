@@ -19,6 +19,12 @@ YEAR_CHOICES = [(n, f"{n}{YEAR_SUFFIX.get(n, 'th')} Year") for n in range(1, 5)]
 NOTICE_EXTENSIONS = ["pdf", "png", "jpg", "jpeg", "webp"]
 NOTICE_IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".webp")
 
+# Proof of payment a student uploads: a phone photo of the bank slip, a scan,
+# or the PDF an online transfer produces.
+RECEIPT_EXTENSIONS = ["pdf", "png", "jpg", "jpeg", "webp"]
+RECEIPT_IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".webp")
+RECEIPT_MAX_BYTES = 5 * 1024 * 1024
+
 
 # --------------------------------------------------------------------------
 # Organisation
@@ -163,6 +169,44 @@ class Student(models.Model):
             (self.contact_no, "mobile number"),
         ]
         return [label for value, label in required if not value]
+
+    # Every detail the student can fill in themselves, with the Student Panel
+    # page that edits it. The registrar-maintained fields (ID, programme,
+    # session, university e-mail...) are deliberately left out: the meter only
+    # counts gaps the student can actually close.
+    PROFILE_FIELDS = [
+        ("name_bn", "Name (Bangla)", "guardian"),
+        ("father_name", "Father's name", "guardian"),
+        ("mother_name", "Mother's name", "guardian"),
+        ("religion", "Religion", "guardian"),
+        ("blood_group", "Blood group", "guardian"),
+        ("contact_no", "Contact number", "guardian"),
+        ("present_address", "Present address", "guardian"),
+        ("permanent_address", "Permanent address", "guardian"),
+        ("guardian_name", "Guardian's name", "guardian"),
+        ("guardian_relation", "Guardian's relation", "guardian"),
+        ("guardian_contact", "Guardian's contact", "guardian"),
+        ("guardian_occupation", "Guardian's occupation", "guardian"),
+        ("bank_name", "Bank name", "bank"),
+        ("bank_branch", "Bank branch", "bank"),
+        ("bank_account_no", "Bank account no.", "bank"),
+    ]
+
+    @property
+    def profile_gaps(self):
+        """The details above that are still blank, and where to fill each in."""
+        return [{"label": label, "page": page}
+                for field, label, page in self.PROFILE_FIELDS
+                if not getattr(self, field)]
+
+    @property
+    def profile_completeness(self):
+        """How much of that record is on file, as a percentage 0-100.
+
+        Drives the completeness meter on the student's profile page.
+        """
+        total = len(self.PROFILE_FIELDS)
+        return round(100 * (total - len(self.profile_gaps)) / total)
 
     @property
     def cgpa(self):
@@ -334,6 +378,35 @@ class EnrollmentDeadline(models.Model):
             return "Late window"
         return "Expired"
 
+    @property
+    def is_applicable(self):
+        """True while a student may still start or change a form for this window.
+
+        The late period counts: an application is accepted right up to
+        `late_end_date`. Once that passes there is no self-service route left.
+        """
+        return self.window_state in ("Open", "Late window")
+
+    @property
+    def closing_date(self):
+        """The last day an application is accepted, late period included."""
+        return self.late_end_date or self.end_date
+
+    @property
+    def closed_notice(self):
+        """Why this window cannot be applied to, and who to take it to."""
+        state = self.window_state
+        if state == "Upcoming":
+            return (f"The form fill-up window for {self.exam_title} opens on "
+                    f"{self.start_date:%d %b %Y}.")
+        if state == "Closed":
+            return (f"The form fill-up window for {self.exam_title} has been closed "
+                    f"by the Examination Controller. Contact the Chairman of your "
+                    f"department if you still need to apply.")
+        return (f"The form fill-up window for {self.exam_title} expired on "
+                f"{self.closing_date:%d %b %Y}, including the late period. "
+                f"Contact the Chairman of your department to apply after the deadline.")
+
 
 class Enrollment(models.Model):
     class Status(models.TextChoices):
@@ -496,6 +569,28 @@ class FormFillup(models.Model):
         return f"{self.invoice_no} - {self.student.student_id}"
 
     @property
+    def is_approved(self):
+        """True once the application has cleared approval."""
+        return self.approval_status in (self.ApprovalStatus.APPROVED,
+                                        self.ApprovalStatus.FINAL)
+
+    def ensure_admit_card(self):
+        """Raise the admit card for an approved application.
+
+        Called wherever approval is granted, so the card exists the moment the
+        Registrar approves rather than only after a separate bulk run. The
+        serial is derived from the window and the student, both of which are
+        already unique together, so re-running this never mints a duplicate.
+        Returns (card, created); (None, False) while still unapproved.
+        """
+        if not self.is_approved:
+            return None, False
+        return AdmitCard.objects.get_or_create(
+            student=self.student, deadline=self.deadline,
+            defaults={"serial_no": f"AC-{self.deadline.pk}-{self.student.student_id}"},
+        )
+
+    @property
     def state_tone(self):
         return {
             self.ApprovalStatus.FINAL: "emerald",
@@ -526,12 +621,32 @@ class FeePayment(models.Model):
     transaction_id = models.CharField(max_length=40, blank=True)
     payment_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=8, choices=Status.choices, default=Status.PENDING)
+    # Proof the student paid at the counter. The Accounts Office opens this,
+    # checks it against the invoice, and marks the payment verified.
+    receipt = models.FileField(
+        upload_to="receipts/", blank=True, null=True,
+        validators=[FileExtensionValidator(RECEIPT_EXTENSIONS)],
+        help_text="Bank payment slip uploaded by the student.")
+    remarks = models.CharField(max_length=200, blank=True,
+                               help_text="Why the Accounts Office rejected the slip.")
+    verified_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         ordering = ["-payment_date"]
 
     def __str__(self):
         return f"{self.invoice_no} - {self.amount} BDT"
+
+    @property
+    def receipt_is_image(self):
+        """True when the slip can be previewed inline rather than linked."""
+        if not self.receipt:
+            return False
+        return self.receipt.name.lower().endswith(RECEIPT_IMAGE_SUFFIXES)
+
+    @property
+    def receipt_filename(self):
+        return os.path.basename(self.receipt.name) if self.receipt else ""
 
 
 class AdmitCard(models.Model):
