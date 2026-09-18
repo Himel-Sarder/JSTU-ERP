@@ -1,5 +1,6 @@
 """Student Panel (Proposal section 7.1)."""
 
+import os
 import random
 from functools import wraps
 
@@ -9,9 +10,10 @@ from django.db.models import Avg, Count, Q  # noqa: F401 - Q used in form builde
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from academics.models import (YEAR_CHOICES, AdmitCard, ClassRoutine, CourseOffer,
-                              Enrollment, EnrollmentDeadline, FeePayment,
-                              FormFillup, Marks, Student)
+from academics.models import (RECEIPT_EXTENSIONS, RECEIPT_MAX_BYTES, YEAR_CHOICES,
+                              AdmitCard, ClassRoutine, CourseOffer, Enrollment,
+                              EnrollmentDeadline, FeePayment, FormFillup, Marks,
+                              Student)
 from accounts.models import AuditLog, Role
 from portal.models import (Award, ComplaintSuggestion, CourseFeedback, Event,
                            Notice, NoticeDismissal)
@@ -296,11 +298,10 @@ def form_fillup(request, student):
                 approval_status=FormFillup.ApprovalStatus.PENDING).delete()
             messages.warning(request, "Form fill-up application withdrawn.")
         else:
-            state = deadline.window_state
-            if state not in ("Open", "Late window"):
-                messages.error(request, f"The form fill-up window is {state.lower()}.")
+            if not deadline.is_applicable:
+                messages.error(request, deadline.closed_notice)
                 return redirect("studentpanel:form_fillup")
-            late = state == "Late window"
+            late = deadline.window_state == "Late window"
             amount = deadline.fee_amount + (deadline.late_fee_amount if late else 0)
             FormFillup.objects.get_or_create(
                 student=student, deadline=deadline,
@@ -336,6 +337,14 @@ def form_fillup_action(request, student, pk):
     deadline = get_object_or_404(deadlines_for(student, open_only=False), pk=pk)
     fillup = FormFillup.objects.filter(student=student, deadline=deadline).first()
 
+    # Once the late period has passed there is no self-service route left, so
+    # "Apply now" must not open a form the student cannot submit. An
+    # application already on file stays readable - the student can still see
+    # what they sent - but the POST guard below refuses any change to it.
+    if not deadline.is_applicable and fillup is None:
+        messages.error(request, deadline.closed_notice)
+        return redirect("studentpanel:form_fillup")
+
     if request.method == "POST":
         action = request.POST.get("action")
 
@@ -353,10 +362,10 @@ def form_fillup_action(request, student, pk):
                 return redirect("studentpanel:form_fillup_action", pk=deadline.pk)
             # Falls through, so courses picked before the upload are kept too.
 
-        state = deadline.window_state
-        if state not in ("Open", "Late window"):
-            messages.error(request, f"The form fill-up window is {state.lower()}.")
+        if not deadline.is_applicable:
+            messages.error(request, deadline.closed_notice)
             return redirect("studentpanel:form_fillup")
+        state = deadline.window_state
 
         # Uploading a signature on an untouched form should not raise an
         # invoice; only create one once there is something to record.
@@ -419,32 +428,73 @@ def form_fillup_action(request, student, pk):
 
 @student_required
 def form_fillup_payment(request, student, pk):
+    """Pay at the bank counter, then upload the slip for the Accounts Office.
+
+    Uploading marks the invoice paid straight away so the student is not
+    blocked, but the payment itself stays `Pending` until Accounts opens the
+    slip and verifies it.
+    """
     fillup = get_object_or_404(FormFillup, pk=pk, student=student)
-    return render(request, "studentpanel/form_fillup_payment.html",
-                  shell(student, "form_fillup", fillup=fillup))
+    payment = fillup.payments.first()          # newest, per FeePayment.Meta
 
-
-@student_required
-def invoices(request, student):
     if request.method == "POST":
-        fillup = get_object_or_404(FormFillup, pk=request.POST.get("fillup"), student=student)
+        upload = request.FILES.get("receipt")
+        if upload is None:
+            messages.error(request, "Choose a photo or PDF of your bank slip first.")
+            return redirect("studentpanel:form_fillup_payment", pk=fillup.pk)
+
+        suffix = os.path.splitext(upload.name)[1].lower().lstrip(".")
+        if suffix not in RECEIPT_EXTENSIONS:
+            messages.error(
+                request,
+                "The slip must be a PDF or an image (" 
+                + ", ".join(RECEIPT_EXTENSIONS) + ").")
+            return redirect("studentpanel:form_fillup_payment", pk=fillup.pk)
+        if upload.size > RECEIPT_MAX_BYTES:
+            messages.error(request, "The slip must be 5 MB or smaller.")
+            return redirect("studentpanel:form_fillup_payment", pk=fillup.pk)
+
+        # A verified payment is final; a pending or rejected one is replaced by
+        # the new slip rather than piling up duplicates against one invoice.
+        if payment and payment.status == FeePayment.Status.VERIFIED:
+            messages.warning(request, "This invoice has already been verified by Accounts.")
+            return redirect("studentpanel:form_fillup_payment", pk=fillup.pk)
+        if payment:
+            if payment.receipt:
+                payment.receipt.delete(save=False)
+            payment.delete()
+
+        method = request.POST.get("method", FeePayment.Method.COUNTER)
         FeePayment.objects.create(
             form_fillup=fillup, invoice_no=fillup.invoice_no, amount=fillup.amount,
-            method=request.POST.get("method", FeePayment.Method.JANATA),
-            transaction_id=f"TXN{random.randint(10**9, 10**10 - 1)}",
+            method=method if method in dict(FeePayment.Method.choices) else FeePayment.Method.COUNTER,
+            transaction_id=request.POST.get("transaction_id", "").strip()[:40],
+            receipt=upload,
             status=FeePayment.Status.PENDING,
         )
         fillup.payment_status = FormFillup.PaymentStatus.PAID
         fillup.approval_status = FormFillup.ApprovalStatus.ACCOUNTS
-        fillup.save()
-        messages.success(request, "Payment submitted. The Accounts Office will verify it shortly.")
-        return redirect("studentpanel:invoices")
+        fillup.save(update_fields=["payment_status", "approval_status"])
+        AuditLog.record(request, AuditLog.Action.CREATE, "FeePayment", fillup.invoice_no)
+        messages.success(
+            request,
+            "Receipt uploaded. The Accounts Office will verify it and approve your form.")
+        return redirect("studentpanel:form_fillup_payment", pk=fillup.pk)
 
+    return render(request, "studentpanel/form_fillup_payment.html", shell(
+        student, "form_fillup", fillup=fillup, payment=payment,
+        methods=FeePayment.Method.choices,
+    ))
+
+
+@student_required
+def invoices(request, student):
+    # An invoice is settled by uploading the bank slip on the payment page -
+    # there is no button here that can mark one paid on its own.
     fillups = FormFillup.objects.filter(student=student).select_related("deadline")
     return render(request, "studentpanel/invoices.html", shell(
         student, "invoices", fillups=fillups,
         payments=FeePayment.objects.filter(form_fillup__student=student),
-        methods=FeePayment.Method.choices,
         outstanding=sum(float(f.amount) for f in fillups
                         if f.payment_status == FormFillup.PaymentStatus.UNPAID),
     ))
